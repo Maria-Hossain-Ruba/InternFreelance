@@ -1,0 +1,55 @@
+﻿@model IEnumerable<InternFreelance.Models.ProjectApplication>
+
+@{
+    ViewData["Title"] = "My Applications";
+}
+
+<h3 class="mt-3">My Applications</h3>
+
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-info">@TempData["Msg"]</div>
+}
+
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Status</th>
+            <th>Submitted</th>
+            <th>Work link</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.Project?.Title</td>
+                <td>@a.Status</td>
+                <td>@a.AppliedAt.ToShortDateString()</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(a.SubmissionUrl))
+                    {
+                        <a href="@a.SubmissionUrl" target="_blank">View work</a>
+                    }
+                    else
+                    {
+                        <span class="text-muted small">Not submitted</span>
+                    }
+                </td>
+                <td>
+                    @if (a.Status == "Accepted" && string.IsNullOrEmpty(a.SubmissionUrl))
+                    {
+                        <form asp-action="SubmitDeliverable" method="post" class="d-flex">
+                            <input type="hidden" name="appId" value="@a.Id" />
+                            <input type="url" name="submissionUrl" class="form-control form-control-sm me-1"
+                                   placeholder="GitHub/GDrive URL" required />
+                            <button class="btn btn-accent btn-sm">Send</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

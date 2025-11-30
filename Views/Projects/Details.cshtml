@@ -1,0 +1,94 @@
+﻿@model InternFreelance.Models.Project
+@using InternFreelance.Models
+@using System.Linq
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Project Details";
+    var session = HttpContextAccessor.HttpContext!.Session;
+    var userRole = session.GetString("UserRole");   // "Student", "SME", "Admin" or null
+}
+
+<div class="row mt-3">
+    <div class="col-md-8">
+        <h3>@Model.Title</h3>
+        <span class="badge bg-secondary">@Model.Status</span>
+        <p class="mt-3">@Model.Description</p>
+
+        <p class="small text-muted">
+            Skills: @Model.Skills<br />
+            Budget: @(Model.Budget.HasValue ? "$" + Model.Budget.Value.ToString("0") : "Flexible")
+        </p>
+
+        <p class="small">
+            Posted by: <strong>@Model.Owner?.FullName</strong>
+            <span class="text-muted">(@Model.CreatedAt.ToShortDateString())</span>
+        </p>
+
+        @if (TempData["Msg"] != null)
+        {
+            <div class="alert alert-info">@TempData["Msg"]</div>
+        }
+
+        @* Show apply form only if logged-in student and project not completed *@
+        @if (userRole == "Student" && Model.Status != "Completed")
+        {
+            <hr />
+            <h5>Apply as student</h5>
+            <form asp-controller="Projects"
+                  asp-action="Apply"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="projectId" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label class="form-label">Cover letter</label>
+                    <textarea name="coverLetter" class="form-control" rows="4"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Upload CV (PDF, DOCX)</label>
+                    <input type="file" name="cvFile" class="form-control" required />
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    Apply with CV
+                </button>
+            </form>
+
+        }
+        else if (string.IsNullOrEmpty(userRole))
+        {
+            <div class="alert alert-warning mt-3">
+                Please <a asp-controller="Account" asp-action="Login">log in</a> as a student to apply.
+            </div>
+        }
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="card-title">Applicants</h6>
+                @if (Model.Applications != null && Model.Applications.Count > 0)
+                {
+                    <ul class="list-unstyled small">
+                        @foreach (var app in Model.Applications.OrderByDescending(a => a.AppliedAt))
+                        {
+                            <li class="mb-2">
+                                <strong>@app.Student?.FullName</strong>
+                                <span class="badge bg-secondary ms-1">@app.Status</span><br />
+                                <span class="text-muted">@app.AppliedAt.ToShortDateString()</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted small">No applications yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

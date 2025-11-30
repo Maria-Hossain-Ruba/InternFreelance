@@ -1,0 +1,229 @@
+﻿@using InternFreelance.Models
+@model List<ProjectApplication>
+
+@{
+    ViewData["Title"] = "Student Workspace";
+
+    var total = Model?.Count ?? 0;
+    var active = Model?
+        .Count(a => a.Status == "Pending" || a.Status == "Accepted" || a.Status == "Assigned")
+        ?? 0;
+    var portfolio = Model?
+        .Count(a => a.Status == "Completed")
+        ?? 0;
+
+    var activeApps = Model?
+        .Where(a => a.Status == "Pending" || a.Status == "Accepted" || a.Status == "Assigned")
+        .OrderByDescending(a => a.AppliedAt)
+        .ToList() ?? new List<ProjectApplication>();
+
+    var portfolioApps = Model?
+        .Where(a => a.Status == "Completed")
+        .OrderByDescending(a => a.AppliedAt)
+        .ToList() ?? new List<ProjectApplication>();
+}
+
+<div class="student-shell">
+    <!-- top strip -->
+    <section class="student-hero card-elevated">
+        <div class="student-hero-left">
+            <p class="student-hero-kicker">Student workspace</p>
+            <h1 class="student-hero-title">
+                Track your applications and build your portfolio.
+            </h1>
+            <p class="student-hero-subtitle">
+                Browse curated SME projects, apply with your CV, and convert completed work
+                into a verified internship portfolio.
+            </p>
+            <div class="student-hero-actions">
+                <a asp-controller="Projects" asp-action="Index" class="btn-primary-strong">
+                    Browse all projects
+                </a>
+                <a asp-controller="Projects" asp-action="MyApplications" class="btn-ghost-light">
+                    View application history
+                </a>
+            </div>
+        </div>
+        <div class="student-hero-right">
+            <div class="metric-tile">
+                <span class="metric-label">Total applications</span>
+                <span class="metric-value">@total</span>
+            </div>
+            <div class="metric-tile">
+                <span class="metric-label">Active</span>
+                <span class="metric-value">@active</span>
+            </div>
+            <div class="metric-tile">
+                <span class="metric-label">Portfolio projects</span>
+                <span class="metric-value">@portfolio</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- recommended / discovery -->
+    <section class="card-elevated section-block">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Recommended projects</h2>
+                <p class="section-subtitle">
+                    Suggestions based on availability and relevancy.
+                </p>
+            </div>
+            <a asp-controller="Projects" asp-action="Index" class="link-subtle">
+                Explore marketplace →
+            </a>
+        </div>
+
+        <div class="section-body muted-panel">
+            <p class="mb-0">
+                There are no personalised recommendations yet.
+                Browse the marketplace and apply to projects that match your skills.
+            </p>
+        </div>
+    </section>
+
+    <!-- main two-column layout -->
+    <div class="grid-two-columns">
+        <!-- ACTIVE APPLICATIONS -->
+        <section class="card-elevated section-block">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Active applications</h2>
+                    <p class="section-subtitle">
+                        Pending, accepted, or assigned opportunities in progress.
+                    </p>
+                </div>
+            </div>
+
+            <div class="section-body">
+                @if (!activeApps.Any())
+                {
+                    <div class="muted-panel">
+                        <p class="mb-1">You don’t have any active applications yet.</p>
+                        <p class="mb-0">
+                            Start by browsing projects that match your interests and upload your CV
+                            when you apply.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm student-table">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Applied on</th>
+                                    <th>Status</th>
+                                    <th>CV</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var app in activeApps)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="cell-title">
+                                                @app.Project?.Title
+                                            </div>
+                                            <div class="cell-meta">
+                                                @app.Project?.Skills
+                                            </div>
+                                        </td>
+                                        <td>@app.AppliedAt.ToShortDateString()</td>
+                                        <td>
+                                            <span class="status-pill status-@app.Status.ToLowerInvariant()">
+                                                @app.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(app.CvPath))
+                                            {
+                                                <a href="@app.CvPath" target="_blank" class="link-subtle">
+                                                    View CV
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">Not uploaded</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <a asp-controller="Projects"
+                                               asp-action="Details"
+                                               asp-route-id="@app.ProjectId"
+                                               class="btn-table">
+                                                View project
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- PORTFOLIO -->
+        <section class="card-elevated section-block">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Portfolio</h2>
+                    <p class="section-subtitle">
+                        Completed projects that showcase your work.
+                    </p>
+                </div>
+            </div>
+
+            <div class="section-body">
+                @if (!portfolioApps.Any())
+                {
+                    <div class="muted-panel">
+                        <p class="mb-1">Your portfolio is empty for now.</p>
+                        <p class="mb-0">
+                            Once a project is marked completed, it will appear here with
+                            links to your deliverables.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="portfolio-list">
+                        @foreach (var app in portfolioApps)
+                        {
+                            <article class="portfolio-card">
+                                <h3 class="portfolio-title">
+                                    @app.Project?.Title
+                                </h3>
+                                <p class="portfolio-meta">
+                                    Completed on @app.AppliedAt.ToShortDateString()
+                                </p>
+                                <p class="portfolio-summary">
+                                    @app.Project?.Description
+                                </p>
+                                <div class="portfolio-footer">
+                                    @if (!string.IsNullOrEmpty(app.SubmissionUrl))
+                                    {
+                                        <a href="@app.SubmissionUrl"
+                                           target="_blank"
+                                           class="btn-outline">
+                                            View deliverable
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">
+                                            Deliverable link not added yet.
+                                        </span>
+                                    }
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+</div>

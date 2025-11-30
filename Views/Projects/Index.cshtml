@@ -1,0 +1,36 @@
+﻿@model IEnumerable<InternFreelance.Models.Project>
+
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <h3>Live Projects</h3>
+    <a asp-action="Create" class="btn btn-accent btn-sm">Post a project (SME)</a>
+</div>
+
+<p class="text-muted small mt-1">Fresh work from SMEs, ready for students.</p>
+
+<div class="row mt-3">
+    @foreach (var p in Model)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card project-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@p.Title</h5>
+                    <span class="badge bg-secondary">@p.Status</span>
+                    <p class="card-text small mt-2">
+                        @((p.Description.Length > 120) ? p.Description.Substring(0, 120) + "..." : p.Description)
+                    </p>
+                    <p class="small text-muted mb-1">
+                        Skills: @p.Skills
+                    </p>
+                    <p class="small text-muted">
+                        Budget: @(p.Budget.HasValue ? "$" + p.Budget.Value.ToString("0") : "Flexible")
+                    </p>
+                    <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-outline-primary btn-sm">View details</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

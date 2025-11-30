@@ -1,0 +1,41 @@
+﻿@model IEnumerable<InternFreelance.Models.Project>
+
+@{
+    ViewData["Title"] = "My SME Projects";
+}
+
+<h3 class="mt-3">My SME Projects</h3>
+<a asp-action="Create" class="btn btn-accent btn-sm mt-2">Post new project</a>
+
+<table class="table table-hover mt-3">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Applications</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Title</td>
+                <td>@p.Status</td>
+                <td>@(p.Applications?.Count ?? 0)</td>
+                <td>
+                    <a asp-action="Applications" asp-route-projectId="@p.Id" class="btn btn-outline-primary btn-sm">
+                        View applications
+                    </a>
+                    @if (p.Status != "Completed")
+                    {
+                        <form asp-action="MarkCompleted" method="post" class="d-inline">
+                            <input type="hidden" name="projectId" value="@p.Id" />
+                            <button class="btn btn-outline-success btn-sm">Mark completed</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

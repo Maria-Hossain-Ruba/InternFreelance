@@ -1,0 +1,137 @@
+﻿@using System.Linq
+@using InternFreelance.Models
+@model SmeDashboardVm
+
+@{
+    ViewData["Title"] = "SME Dashboard";
+
+    var total = Model.TotalProjects;
+    var active = Model.ActiveProjects;
+    var completed = Model.CompletedProjects;
+
+    var projects = Model.Projects ?? new List<Project>();
+}
+
+<div class="container py-4">
+    <!-- Top bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Welcome back 👋</h2>
+            <p class="text-muted mb-0">
+                Manage your internship projects, review applications and track student progress.
+            </p>
+        </div>
+        <div>
+            <a asp-controller="Projects" asp-action="Create" class="btn btn-success">
+                + Post New Project
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-uppercase text-muted">Total Projects</small>
+                    <h3 class="fw-bold mt-2">@total</h3>
+                    <p class="small text-muted mb-0">
+                        All projects you've posted on InternFreelance.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-uppercase text-muted">Active</small>
+                    <h3 class="fw-bold mt-2">@active</h3>
+                    <p class="small text-muted mb-0">
+                        Open or assigned projects currently in progress.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-uppercase text-muted">Completed</small>
+                    <h3 class="fw-bold mt-2">@completed</h3>
+                    <p class="small text-muted mb-0">
+                        Successfully finished projects delivered by students.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects list -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Your Projects</h5>
+            <a asp-controller="Projects" asp-action="Create" class="btn btn-sm btn-outline-success">
+                New Project
+            </a>
+        </div>
+
+        <div class="card-body p-0">
+            @if (!projects.Any())
+            {
+                <div class="p-4 text-center text-muted">
+                    You haven't posted any projects yet.
+                    <a asp-controller="Projects" asp-action="Create">Post your first project</a>.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in projects.OrderByDescending(p => p.CreatedAt))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@p.Title</div>
+                                        <div class="small text-muted">@p.Skills</div>
+                                    </td>
+                                    <td>@p.CreatedAt.ToShortDateString()</td>
+                                    <td>
+                                        <span class="badge
+                                                    @(p.Status == "Completed" ? "bg-success"
+                                                                                            : p.Status == "Assigned" ? "bg-primary"
+                                                                                            : "bg-secondary")">
+                                            @p.Status
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-controller="Projects"
+                                           asp-action="Details"
+                                           asp-route-id="@p.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                        <a asp-controller="Projects"
+                                           asp-action="Applications"
+                                           asp-route-projectId="@p.Id"
+                                           class="btn btn-sm btn-outline-dark ms-1">
+                                            Applications
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
