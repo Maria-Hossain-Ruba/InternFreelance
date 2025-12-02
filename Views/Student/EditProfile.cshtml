@@ -1,0 +1,98 @@
+﻿@using InternFreelance.Models
+@model AppUser
+
+@{
+    ViewData["Title"] = "Edit profile";
+}
+
+<style>
+    body {
+        background: #F3F4F6;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .edit-page {
+        padding: 32px 0 40px;
+    }
+
+    .edit-card {
+        background: #FFFFFF;
+        border-radius: 18px;
+        border: 1px solid #E5E7EB;
+        padding: 20px 20px 18px;
+        box-shadow: 0 14px 28px rgba(148, 163, 184, 0.2);
+    }
+
+    .form-text-muted {
+        font-size: 0.8rem;
+        color: #6B7280;
+    }
+</style>
+
+<div class="container edit-page">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="edit-card">
+                <h3 class="mb-2">Edit profile</h3>
+                <p class="form-text-muted mb-3">
+                    Keep things short and focused on the kind of projects you’d like to work on.
+                </p>
+
+                <form asp-action="EditProfile" asp-controller="Student" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label">Headline</label>
+                        <input asp-for="Headline" class="form-control" placeholder="Frontend student – React + ASP.NET" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Short bio</label>
+                        <textarea asp-for="Bio" class="form-control" rows="4"
+                                  placeholder="1–3 sentences about your skills, interests and availability."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Skills (comma separated)</label>
+                        <input asp-for="SkillsCsv" class="form-control" placeholder="React, ASP.NET, SQL" />
+                        <div class="form-text-muted">
+                            These will appear as small tags on your profile.
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">University</label>
+                            <input asp-for="University" class="form-control" />
+                        </div>
+                        
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">GitHub URL</label>
+                        <input asp-for="GithubUrl" class="form-control" placeholder="https://github.com/username" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Portfolio URL</label>
+                        <input asp-for="PortfolioUrl" class="form-control" placeholder="https://your-portfolio.com" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">LinkedIn URL</label>
+                        <input asp-for="LinkedInUrl" class="form-control" placeholder="https://linkedin.com/in/you" />
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a asp-action="Profile" asp-controller="Student" class="btn btn-link">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Save changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

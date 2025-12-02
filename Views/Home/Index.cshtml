@@ -1,193 +1,461 @@
-﻿@{
-    ViewData["Title"] = "Find real SME projects";
+﻿@using InternFreelance.Models
+@model List<Project>
+
+@{
+    ViewData["Title"] = "InternFreelance – Student & SME project marketplace";
 }
 
-<div class="home-hero">
-    <div class="container">
-        <div class="row align-items-center g-4">
-            <!-- LEFT: hero text -->
-            <div class="col-lg-6">
-                <p class="hero-kicker mb-2">InternFreelance • Student marketplace</p>
-                <h1 class="hero-title">
-                    Get <span class="accent">real projects</span><br />
-                    from real <span class="accent">SMEs</span>.
+<style>
+    /* ========= Pastel + Blue Neon SaaS Theme (v2 with better layout) ========= */
+
+    body {
+        background: radial-gradient(circle at top left, #E0F2FE 0%, #FDF2FF 28%, #F9FAFB 55%, #ECFEFF 100%);
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #0F172A;
+    }
+
+    .lf-landing-wrapper {
+        padding: 28px 0 60px;
+    }
+
+    .lf-hero {
+        margin-bottom: 48px;
+    }
+
+    .lf-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.08);
+        color: #1D4ED8;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .lf-pill-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #0EA5E9, #22C55E);
+    }
+
+    .lf-hero-title {
+        font-size: 3rem;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        margin-bottom: 12px;
+    }
+
+    .lf-hero-sub {
+        font-size: 1rem;
+        color: #4B5563;
+        max-width: 560px;
+    }
+
+    .lf-btn-primary {
+        background: linear-gradient(135deg, #2563EB, #0EA5E9);
+        border: none;
+        color: #FFFFFF;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 10px 24px;
+        font-size: 0.92rem;
+    }
+
+        .lf-btn-primary:hover {
+            filter: brightness(1.05);
+            color: #FFFFFF;
+        }
+
+    .lf-btn-outline {
+        border-radius: 999px;
+        border: 1px solid #CBD5F5;
+        background: rgba(255, 255, 255, 0.85);
+        color: #334155;
+        font-size: 0.9rem;
+        padding: 10px 22px;
+    }
+
+        .lf-btn-outline:hover {
+            background: #E0EAFF;
+            color: #111827;
+        }
+
+    .lf-search-shell {
+        margin-top: 22px;
+        margin-bottom: 16px;
+    }
+
+    .lf-search-box {
+        background: rgba(255, 255, 255, 0.97);
+        border-radius: 999px;
+        box-shadow: 0 20px 50px rgba(148, 163, 184, 0.35);
+        padding: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .lf-search-input {
+        border: none;
+        outline: none;
+        flex: 1;
+        padding: 11px 14px;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        background: transparent;
+    }
+
+        .lf-search-input::placeholder {
+            color: #94A3B8;
+        }
+
+    .lf-search-btn {
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #4F46E5, #0EA5E9);
+        color: #FFFFFF;
+        font-weight: 600;
+        padding: 9px 20px;
+        font-size: 0.88rem;
+        white-space: nowrap;
+    }
+
+    .lf-tag-label {
+        font-size: 0.8rem;
+        color: #6B7280;
+        margin-right: 4px;
+    }
+
+    .lf-tag {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        background: #EFF6FF;
+        color: #1D4ED8;
+        margin-right: 4px;
+    }
+
+        .lf-tag:hover {
+            background: #DBEAFE;
+        }
+
+    .lf-stats {
+        margin-top: 14px;
+        font-size: 0.9rem;
+        color: #6B7280;
+    }
+
+        .lf-stats strong {
+            font-size: 1.05rem;
+            color: #0F172A;
+        }
+
+    .lf-hero-media {
+        display: flex;
+        justify-content: center;
+    }
+
+    .lf-hero-frame {
+        width: 100%;
+        max-width: 430px;
+        background: #FFFFFF;
+        border-radius: 28px;
+        padding: 12px 12px 16px;
+        box-shadow: 0 28px 80px rgba(15, 23, 42, 0.45);
+        border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .lf-hero-frame-header {
+        height: 22px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 6px 8px;
+    }
+
+    .lf-frame-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background-color: #E5E7EB;
+    }
+
+    .lf-frame-title {
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+
+    .lf-board {
+        background: #020617;
+        color: #E5E7EB;
+        border-radius: 18px;
+        padding: 16px 14px;
+        box-shadow: 0 20px 55px rgba(15, 23, 42, 0.85);
+        max-height: 290px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .lf-board-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .lf-board-tag {
+        font-size: 0.85rem;
+        color: #E5E7EB;
+        font-weight: 600;
+    }
+
+    .lf-board-pill {
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid #334155;
+        font-size: 0.7rem;
+        color: #9CA3AF;
+    }
+
+    .lf-board-list {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .lf-board-item {
+        padding: 9px 6px;
+        border-radius: 10px;
+    }
+
+        .lf-board-item + .lf-board-item {
+            margin-top: 4px;
+        }
+
+        .lf-board-item:hover {
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+    .lf-board-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .lf-board-meta {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+    }
+
+    .lf-board-price {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #38BDF8;
+        margin-top: 2px;
+    }
+
+    .lf-board-footer {
+        font-size: 0.8rem;
+        color: #93C5FD;
+        margin-top: 8px;
+        cursor: pointer;
+    }
+
+    .lf-section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .lf-section-sub {
+        font-size: 0.9rem;
+        color: #6B7280;
+    }
+
+    .lf-category-card {
+        background: #FFFFFF;
+        border-radius: 16px;
+        border: 1px solid #E5E7EB;
+        padding: 16px 16px 14px;
+        box-shadow: 0 14px 32px rgba(148, 163, 184, 0.22);
+        height: 100%;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+        .lf-category-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(148, 163, 184, 0.28);
+        }
+
+    .lf-cat-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .lf-cat-text {
+        font-size: 0.83rem;
+        color: #6B7280;
+    }
+
+    .lf-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .lf-step-number {
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        background: #EEF2FF;
+        color: #4F46E5;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lf-step-text-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .lf-step-text-body {
+        font-size: 0.83rem;
+        color: #6B7280;
+    }
+
+   
+
+        .lf-hero-media {
+            margin-top: 24px;
+        }
+    }
+</style>
+
+<div class="container lf-landing-wrapper">
+
+    <!-- HERO -->
+    <section class="lf-hero">
+        <div class="row align-items-center gy-4">
+            <div class="col-lg-7">
+                <div class="lf-pill mb-2">
+                    <span class="lf-pill-dot"></span>
+                    InternFreelance • Student & SME project marketplace
+                </div>
+
+                <h1 class="lf-hero-title">
+                    Get real projects from real SMEs.
                 </h1>
-                <p class="hero-subtitle mt-3">
-                    Not fake assignments. Actual work from startups and SMEs that
-                    turns into a solid portfolio and internship experience.
+
+                <p class="lf-hero-sub">
+                    Not fake assignments. Actual work from startups and small businesses that turns
+                    into a strong portfolio for students and reliable delivery for SMEs.
                 </p>
 
-                <!-- search bar -->
-                <form class="hero-search mt-4" asp-controller="Projects" asp-action="Index" method="get">
-                    <div class="input-group input-group-lg">
-                        <input type="text"
-                               name="q"
-                               class="form-control hero-search-input"
-                               placeholder="Search projects e.g. &quot;React landing page&quot; or &quot;Logo design&quot;" />
-                        <button class="btn btn-accent fw-semibold" type="submit">
-                            Search
-                        </button>
-                    </div>
-                    <div class="hero-tags mt-2">
-                        Trending:
-                        <button type="submit" name="q" value="frontend" class="btn btn-tag">Frontend</button>
-                        <button type="submit" name="q" value="ui ux" class="btn btn-tag">UI/UX</button>
-                        <button type="submit" name="q" value="asp.net" class="btn btn-tag">ASP.NET</button>
-                        <button type="submit" name="q" value="data entry" class="btn btn-tag">Data entry</button>
-                    </div>
-                </form>
-
-                <!-- stats -->
-                <div class="hero-stats mt-4">
-                    <div class="stat-item">
-                        <div class="stat-number">40+</div>
-                        <div class="stat-label">SME partners</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">120+</div>
-                        <div class="stat-label">Projects completed</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">3</div>
-                        <div class="stat-label">Sample roles built-in</div>
-                    </div>
+                <!-- Search wired to Projects/Index -->
+                <div class="lf-search-shell">
+                    <form asp-controller="Projects" asp-action="Index" method="get" class="lf-search-box">
+                        <input class="lf-search-input"
+                               name="search"
+                               placeholder='Search projects e.g. "React landing page" or "Inventory dashboard"' />
+                        <button type="submit" class="lf-search-btn">Search</button>
+                    </form>
                 </div>
 
-                <div class="mt-4 d-flex flex-wrap gap-3">
-                    <a asp-controller="Projects" asp-action="Index" class="btn btn-accent btn-lg">
-                        Browse live projects
-                    </a>
-                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-lg">
+                <div class="mb-2">
+                    <span class="lf-tag-label">Trending:</span>
+                    <span class="lf-tag">Frontend</span>
+                    <span class="lf-tag">UI/UX</span>
+                    <span class="lf-tag">ASP.NET</span>
+                    <span class="lf-tag">Automation</span>
+                </div>
+
+                <div class="lf-stats d-flex flex-wrap gap-4 mt-3">
+                    <div><strong>40+ </strong> SME partners</div>
+                    <div><strong>120+ </strong> projects completed</div>
+                    <div><strong>3 </strong> sample roles built-in</div>
+                </div>
+
+                <div class="mt-4 d-flex flex-wrap gap-2">
+                    <a asp-controller="Account" asp-action="Register" class="btn lf-btn-primary">
                         Join as student
                     </a>
+                    <a asp-controller="Account" asp-action="Register" class="btn lf-btn-outline">
+                        Post a project as SME
+                    </a>
                 </div>
             </div>
 
-            <!-- RIGHT: hero card -->
-            <div class="col-lg-6">
-                <div class="hero-card shadow-lg">
-                    <div class="hero-card-header">
-                        <span class="dot dot-green"></span>
-                        <span class="dot dot-yellow"></span>
-                        <span class="dot dot-red"></span>
-                        <span class="hero-card-title">Live project board</span>
-                    </div>
-                    <div class="hero-card-body">
-                        <div class="fake-project-row">
-                            <div>
-                                <div class="fp-title">Landing page for travel SaaS</div>
-                                <div class="fp-meta">UI/UX • HTML • Bootstrap</div>
-                            </div>
-                            <div class="fp-budget">$150</div>
-                        </div>
-                        <div class="fake-project-row">
-                            <div>
-                                <div class="fp-title">Simple ASP.NET CRUD dashboard</div>
-                                <div class="fp-meta">C# • ASP.NET • SQL</div>
-                            </div>
-                            <div class="fp-budget">$200</div>
-                        </div>
-                        <div class="fake-project-row">
-                            <div>
-                                <div class="fp-title">Social media content pack</div>
-                                <div class="fp-meta">Canva • Copywriting</div>
-                            </div>
-                            <div class="fp-budget">$80</div>
+            <!-- Right side – framed board with real projects -->
+            <div class="col-lg-5">
+                <div class="lf-hero-media">
+                    <div class="lf-hero-frame">
+                        <div class="lf-hero-frame-header">
+                            <span class="lf-frame-dot"></span>
+                            <span class="lf-frame-dot"></span>
+                            <span class="lf-frame-dot"></span>
+                            <span class="lf-frame-title ms-1">InternFreelance dashboard preview</span>
                         </div>
 
-                        <div class="text-end mt-3">
-                            <a asp-controller="Projects" asp-action="Index" class="link-light small">
-                                View all projects &rarr;
-                            </a>
+                        <div class="lf-board">
+                            <div class="lf-board-header">
+                                <div class="lf-board-tag">Live project board</div>
+                                <div class="lf-board-pill">Using real data</div>
+                            </div>
+
+                            <div class="lf-board-list">
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var p in Model)
+                                    {
+                                        <div class="lf-board-item">
+                                            <div class="lf-board-title">@p.Title</div>
+                                            <div class="lf-board-meta">@p.Skills</div>
+                                            <div class="lf-board-price">
+                                                @if (p.Budget > 0)
+                                                {
+                                                    @("$" + p.Budget)
+                                                }
+                                                else
+                                                {
+                                                    @:Budget on request
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="lf-board-item">
+                                        <div class="lf-board-meta">
+                                            No live projects yet. New projects will appear here automatically.
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="lf-board-footer">
+                                <a asp-controller="Projects" asp-action="Index"
+                                   style="color:#93C5FD; text-decoration:none;">
+                                    View all projects →
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- The rest of the sections (Browse live projects + How it works) -->
+    <!-- You can keep your existing ones below or the version I sent earlier -->
 </div>
-
-<!-- trusted strip -->
-<section class="trusted-strip">
-    <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div class="trusted-label">Trusted by SMEs & student clubs from</div>
-        <div class="trusted-logos">
-            <span>BrightTech</span>
-            <span>CampusHub</span>
-            <span>Alpha Labs</span>
-            <span>StartX</span>
-        </div>
-    </div>
-</section>
-
-<!-- categories -->
-<section class="section-block">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="section-title">Browse by category</h2>
-            <a asp-controller="Projects" asp-action="Index" class="link-light small">
-                See all &rarr;
-            </a>
-        </div>
-        <div class="row g-3">
-            <div class="col-6 col-md-3">
-                <a asp-controller="Projects" asp-action="Index" asp-route-q="web"
-                   class="category-card">
-                    <div class="category-title">Web development</div>
-                    <div class="category-sub">Landing pages, dashboards</div>
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a asp-controller="Projects" asp-action="Index" asp-route-q="design"
-                   class="category-card">
-                    <div class="category-title">Design &amp; UI</div>
-                    <div class="category-sub">Logos, Figma, social</div>
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a asp-controller="Projects" asp-action="Index" asp-route-q="data"
-                   class="category-card">
-                    <div class="category-title">Data &amp; scripts</div>
-                    <div class="category-sub">Reports, automation</div>
-                </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a asp-controller="Projects" asp-action="Index" asp-route-q="content"
-                   class="category-card">
-                    <div class="category-title">Content</div>
-                    <div class="category-sub">Blog posts, marketing</div>
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- how it works -->
-<section class="section-block">
-    <div class="container">
-        <h2 class="section-title mb-4">How it works</h2>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h5>Sign up as a student</h5>
-                    <p>Create a simple profile with your skills and year of study.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h5>Apply to SME projects</h5>
-                    <p>Send a short cover letter and link to your work or GitHub.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h5>Deliver & get proof</h5>
-                    <p>Submit your work link, get marked as completed, and use it in your CV.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>

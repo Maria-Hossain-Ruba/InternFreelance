@@ -316,3 +316,565 @@
         grid-template-columns: 1fr;
     }
 }
+/* ====== Global tidy up for landing ====== */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #111827;
+    background-color: #f9fafb;
+}
+
+/* ====== Landing (lf- prefix) ====== */
+
+.lf-landing {
+    min-height: 100vh;
+    padding: 4rem 1.5rem 5rem;
+    background: radial-gradient(120% 160% at 0% 0%, #eef2ff 0, #ffffff 42%, #f9fafb 100%);
+}
+
+.lf-hero,
+.lf-section {
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+/* Layout */
+.lf-hero {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+    margin-bottom: 3.5rem;
+}
+
+.lf-hero-main {
+    flex: 1.3;
+}
+
+.lf-hero-aside {
+    flex: 1;
+}
+
+/* Text */
+.lf-kicker {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 0.75rem;
+}
+
+.lf-hero-title {
+    font-size: clamp(2.4rem, 3.2vw + 1.1rem, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    margin-bottom: 1rem;
+}
+
+.lf-hero-subtitle {
+    max-width: 36rem;
+    font-size: 1rem;
+    color: #4b5563;
+    line-height: 1.7;
+    margin-bottom: 1.75rem;
+}
+
+/* Search */
+.lf-search {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.55rem 0.55rem 1.25rem;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+    margin-bottom: 1rem;
+}
+
+    .lf-search input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 0.95rem;
+        background: transparent;
+        padding: 0.4rem 0.5rem;
+        color: #111827;
+    }
+
+        .lf-search input::placeholder {
+            color: #9ca3af;
+        }
+
+/* Buttons */
+.lf-btn-primary {
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1.6rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: #111827;
+    color: #ffffff;
+}
+
+    .lf-btn-primary:hover {
+        background: #020617;
+    }
+
+.lf-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    padding: 0.6rem 1.4rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: #111827;
+    background: #ffffff;
+}
+
+    .lf-btn-secondary:hover {
+        background: #f9fafb;
+    }
+
+/* Trending */
+.lf-trending {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+}
+
+.lf-trending-label {
+    margin-right: 0.4rem;
+    color: #6b7280;
+}
+
+.lf-pill {
+    display: inline-flex;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #4b5563;
+    text-decoration: none;
+}
+
+    .lf-pill:hover {
+        background: #e5e7eb;
+    }
+
+/* Stats */
+.lf-stats {
+    display: flex;
+    gap: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.lf-stat dt {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.lf-stat dd {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* Board */
+.lf-board {
+    background: linear-gradient(135deg, #0f172a, #020617);
+    color: #e5e7eb;
+    border-radius: 1.5rem;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 22px 70px rgba(15, 23, 42, 0.35);
+}
+
+.lf-board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.lf-board-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.25);
+}
+
+.lf-board-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.lf-board-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+    .lf-board-item:last-child {
+        border-bottom: none;
+    }
+
+.lf-board-item-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.lf-board-item-meta {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-top: 0.15rem;
+}
+
+.lf-board-item-price {
+    font-size: 0.85rem;
+    color: #a5b4fc;
+    margin-top: 0.25rem;
+}
+
+.lf-board-footer {
+    display: inline-flex;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #e5e7eb;
+    text-decoration: none;
+}
+
+    .lf-board-footer:hover {
+        text-decoration: underline;
+    }
+
+/* Section & categories */
+.lf-section {
+    margin-top: 0;
+}
+
+.lf-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.lf-section-subtitle {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 0.3rem;
+}
+
+.lf-section-eyebrow {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 1rem;
+}
+
+.lf-category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.lf-category-card {
+    display: block;
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    box-shadow: 0 16px 55px rgba(15, 23, 42, 0.07);
+}
+
+.lf-category-title {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 0.3rem;
+}
+
+.lf-category-meta {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .lf-hero {
+        flex-direction: column;
+    }
+
+    .lf-hero-aside {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .lf-landing {
+        padding: 3rem 1rem 4rem;
+    }
+
+    .lf-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* =========================================================
+   INTERNFREELANCE DASHBOARD THEME (green SaaS style)
+   Prefix: dash-
+   ========================================================= */
+
+body {
+    background-color: #f3f5f2;
+}
+
+/* Page wrapper */
+.dash-page {
+    max-width: 1200px;
+    margin: 2.5rem auto 3rem;
+    padding: 0 1.5rem;
+}
+
+/* Simple breadcrumb/title */
+.dash-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1.5rem;
+}
+
+.dash-page-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+}
+
+.dash-page-subtitle {
+    margin-top: 0.3rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* Layout rows */
+.dash-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.5fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dash-row--full {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+/* Generic card */
+.dash-card {
+    background: #ecf2ea;
+    border-radius: 1.8rem;
+    padding: 1.4rem 1.6rem;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+/* Main green hero card */
+.dash-card--hero {
+    background: radial-gradient(circle at top left, #4ade80 0, #16a34a 40%, #064e3b 100%);
+    color: #ecfdf3;
+    position: relative;
+    overflow: hidden;
+}
+
+    .dash-card--hero h2 {
+        font-size: 1.8rem;
+        letter-spacing: -0.04em;
+        margin-bottom: 0.5rem;
+    }
+
+.dash-tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.3);
+    font-size: 0.7rem;
+    margin-bottom: 0.7rem;
+}
+
+.dash-hero-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 0.8rem;
+}
+
+.dash-hero-metric-label {
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+.dash-hero-metric-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+/* Simple “mini stat” pills */
+.dash-stat-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.2rem;
+}
+
+.dash-stat-pill {
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.26);
+    font-size: 0.75rem;
+}
+
+/* Light side panels */
+.dash-card--side {
+    background: #e5ede5;
+}
+
+/* Section headers inside cards */
+.dash-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.9rem;
+}
+
+.dash-card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.dash-card-subtitle {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Tables */
+.dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+}
+
+    .dash-table th,
+    .dash-table td {
+        padding: 0.55rem 0.35rem;
+        text-align: left;
+    }
+
+    .dash-table thead th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #6b7280;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .dash-table tbody tr + tr td {
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+/* Status pill */
+.dash-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+}
+
+.dash-status--pending {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.dash-status--accepted {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.dash-status--assigned {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.dash-status--completed {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* Project list chips */
+.dash-project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.5rem;
+}
+
+.dash-project-item {
+    padding: 0.7rem 0.75rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.dash-project-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.dash-link-muted {
+    font-size: 0.78rem;
+    color: #065f46;
+    text-decoration: none;
+}
+
+    .dash-link-muted:hover {
+        text-decoration: underline;
+    }
+
+/* “Details” pill button */
+.dash-btn-ghost {
+    font-size: 0.78rem;
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid rgba(21, 128, 61, 0.35);
+    background: rgba(240, 253, 244, 0.9);
+    color: #166534;
+    text-decoration: none;
+}
+
+    .dash-btn-ghost:hover {
+        background: #bbf7d0;
+    }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .dash-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dash-page {
+        padding: 0 1rem;
+        margin-top: 1.5rem;
+    }
+}

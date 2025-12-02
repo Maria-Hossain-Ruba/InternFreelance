@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using InternFreelance.Data;
 using InternFreelance.Models;
+using InternFreelance.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,107 +10,116 @@ namespace InternFreelance.Controllers
 {
     public class AccountController : Controller
     {
-        // Create DbContext manually (no DI)
+        // DbContext helper (same pattern as other controllers)
         private AppDbContext CreateDb()
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseSqlite("Data Source=internfreelance.db");
 
             var ctx = new AppDbContext(optionsBuilder.Options);
-            ctx.Database.EnsureCreated();   // make sure tables exist
+            ctx.Database.EnsureCreated();
             return ctx;
         }
 
-        // =============== LOGIN ===============
+        // ---------------------- LOGIN ----------------------
 
+        // GET: /Account/Login
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
-            return View();
+            ViewBag.ReturnUrl = returnUrl;
+            return View(new LoginVm());
         }
 
+        // POST: /Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login(LoginVm model, string? returnUrl = null)
         {
-            using var _context = CreateDb();
-
-            var user = await _context.UsersTable
-                .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
-
-            if (user == null)
-            {
-                ViewBag.Error = "Invalid email or password.";
-                return View();
-            }
-
-            // store session
-            HttpContext.Session.SetString("UserId", user.Id.ToString());
-            HttpContext.Session.SetString("UserName", user.FullName);
-            HttpContext.Session.SetString("UserRole", user.Role.ToString());
-
-            // redirect based on role
-            return user.Role switch
-            {
-                RoleType.Student => RedirectToAction("Student", "Dashboard"),
-                RoleType.SME => RedirectToAction("Sme", "Dashboard"),
-                RoleType.Admin => RedirectToAction("Dashboard", "Admin"),
-                _ => RedirectToAction("Index", "Home")
-            };
-        }
-
-        // =============== REGISTER ===============
-
-        [HttpGet]
-        public IActionResult Register()
-        {
-            // default new user as Student
-            var model = new AppUser
-            {
-                Role = RoleType.Student
-            };
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(AppUser model)
-        {
-            using var _context = CreateDb();
-
             if (!ModelState.IsValid)
                 return View(model);
 
-            bool exists = await _context.UsersTable.AnyAsync(u => u.Email == model.Email);
-            if (exists)
+            using var db = CreateDb();
+
+            // ⚠️ Adjust Email/Password property names if your AppUser is different
+            var user = await db.UsersTable
+                .FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
+
+            if (user == null)
             {
-                ViewBag.Error = "An account with this email already exists.";
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
                 return View(model);
             }
 
-            // save user
-            _context.UsersTable.Add(model);
-            await _context.SaveChangesAsync();
+            HttpContext.Session.SetString("UserId", user.Id.ToString());
 
-            // auto-login after signup
-            HttpContext.Session.SetString("UserId", model.Id.ToString());
-            HttpContext.Session.SetString("UserName", model.FullName);
-            HttpContext.Session.SetString("UserRole", model.Role.ToString());
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
 
-            // redirect based on chosen role
-            return model.Role switch
-            {
-                RoleType.Student => RedirectToAction("Student", "Dashboard"),
-                RoleType.SME => RedirectToAction("Sme", "Dashboard"),
-                _ => RedirectToAction("Index", "Home")
-            };
+            if (user.Role == RoleType.Student)
+                return RedirectToAction("Student", "Dashboard");
+
+            return RedirectToAction("Sme", "Dashboard");
         }
 
-        // =============== LOGOUT ===============
+        // ---------------------- REGISTER ----------------------
 
+        // GET: /Account/Register
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View(new RegisterVm());
+        }
+
+        // POST: /Account/Register
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterVm model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            using var db = CreateDb();
+
+            // check duplicate email
+            var exists = await db.UsersTable.AnyAsync(u => u.Email == model.Email);
+            if (exists)
+            {
+                ModelState.AddModelError(nameof(model.Email), "An account with this email already exists.");
+                return View(model);
+            }
+
+            // ⚠️ Adjust properties here if your AppUser has different names
+            var user = new AppUser
+            {
+                Email = model.Email,
+                Password = model.Password,  // in a real app: hash it
+                Role = model.Role
+            };
+
+            db.UsersTable.Add(user);
+            await db.SaveChangesAsync();
+
+            // log user in after registration
+            HttpContext.Session.SetString("UserId", user.Id.ToString());
+
+            if (user.Role == RoleType.Student)
+                return RedirectToAction("Student", "Dashboard");
+
+            return RedirectToAction("Sme", "Dashboard");
+        }
+
+        // ---------------------- LOGOUT ----------------------
+
+        // POST: /Account/Logout
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
+            // clear everything related to this user
             HttpContext.Session.Clear();
+
+            // go back to home or landing page
             return RedirectToAction("Index", "Home");
         }
     }

@@ -1,81 +1,85 @@
 ﻿@model InternFreelance.Models.Project
 
 @{
-    ViewData["Title"] = "Post New Project";
+    ViewBag.Title = "Create project";
 }
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h3 class="fw-bold mb-1">Post a new project</h3>
-                    <p class="text-muted mb-0">
-                        Describe the work clearly so students know if it fits their skills.
-                    </p>
-                </div>
-                <a asp-controller="Dashboard" asp-action="Sme" class="btn btn-outline-secondary btn-sm">
-                    ← Back to dashboard
-                </a>
-            </div>
-
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
-                        @Html.AntiForgeryToken()
-
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                        <!-- Title -->
-                        <div class="mb-3">
-                            <label asp-for="Title" class="form-label">Project title</label>
-                            <input asp-for="Title" class="form-control" placeholder="e.g. Build a landing page for our SaaS" />
-                            <span asp-validation-for="Title" class="text-danger"></span>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label">Description</label>
-                            <textarea asp-for="Description" rows="5" class="form-control"
-                                      placeholder="Explain the task, deliverables and expectations..."></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
-                        </div>
-
-                        <!-- Skills -->
-                        <div class="mb-3">
-                            <label asp-for="Skills" class="form-label">Required skills</label>
-                            <input asp-for="Skills" class="form-control"
-                                   placeholder="e.g. ASP.NET Core, SQL, Bootstrap" />
-                            <div class="form-text">
-                                Separate skills with commas. This will show as tags on the project.
-                            </div>
-                            <span asp-validation-for="Skills" class="text-danger"></span>
-                        </div>
-
-                        <!-- Budget -->
-                        <div class="mb-3">
-                            <label asp-for="Budget" class="form-label">Budget (optional)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input asp-for="Budget" class="form-control" placeholder="e.g. 150" />
-                            </div>
-                            <span asp-validation-for="Budget" class="text-danger"></span>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <a asp-controller="Dashboard" asp-action="Sme" class="btn btn-outline-secondary">
-                                Cancel
-                            </a>
-                            <button type="submit" class="btn btn-success px-4">
-                                Post project
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
+<div class="dash-page">
+    <div class="dash-page-header">
+        <div>
+            <div class="dash-page-title">Post a new project</div>
+            <p class="dash-page-subtitle">
+                Share a clear brief so students know what they’ll be working on.
+            </p>
         </div>
+    </div>
+
+    <div class="dash-row dash-row--full">
+        <section class="dash-card">
+            <form asp-action="Create"
+                  asp-controller="Projects"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Title -->
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">Project title</label>
+                    <input asp-for="Title" class="form-control"
+                           placeholder="Landing page for travel SaaS" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea asp-for="Description" rows="5" class="form-control"
+                              placeholder="Explain the task, deliverables and expectations..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <!-- Skills -->
+                <div class="mb-3">
+                    <label asp-for="Skills" class="form-label">Required skills</label>
+                    <input asp-for="Skills" class="form-control"
+                           placeholder="e.g. ASP.NET Core, SQL, Bootstrap" />
+                    <div class="form-text">
+                        Separate skills with commas. This will show as tags on the project.
+                    </div>
+                    <span asp-validation-for="Skills" class="text-danger"></span>
+                </div>
+
+                <!-- Budget -->
+                <div class="mb-3">
+                    <label asp-for="Budget" class="form-label">Budget (optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input asp-for="Budget" class="form-control" placeholder="e.g. 150" />
+                    </div>
+                    <span asp-validation-for="Budget" class="text-danger"></span>
+                </div>
+
+                <!-- Brief file upload -->
+                <div class="mb-3">
+                    <label class="form-label">Attach brief (optional)</label>
+                    <input type="file" name="briefFile" class="form-control" />
+                    <div class="dash-card-subtitle" style="margin-top:0.25rem;">
+                        Upload a PDF, DOCX, or any supporting document for students.
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <a asp-controller="Dashboard" asp-action="Sme" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success px-4">
+                        Post project
+                    </button>
+                </div>
+            </form>
+        </section>
     </div>
 </div>
 

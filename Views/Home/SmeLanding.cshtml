@@ -1,0 +1,599 @@
+﻿@{
+    ViewData["Title"] = "IT Freelancers for Small & Medium Businesses";
+    Layout = "_Layout";
+}
+
+<style>
+    .sme-hero {
+        background: linear-gradient(135deg, #2563EB, #1D4ED8);
+        color: #FFFFFF;
+        padding: 80px 0;
+    }
+
+        .sme-hero h1 {
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .sme-hero p {
+            color: #E0E7FF;
+            max-width: 600px;
+        }
+
+    .sme-section {
+        padding: 60px 0;
+        background-color: #FFFFFF;
+    }
+
+    .sme-section-alt {
+        padding: 60px 0;
+        background-color: #E0E7FF;
+    }
+
+    .sme-pill {
+        background-color: rgba(37, 99, 235, 0.08);
+        color: #2563EB;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        padding: 4px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .sme-pill span {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background-color: #22C55E;
+        }
+
+    .sme-card {
+        border-radius: 16px;
+        border: 1px solid #E5E7EB;
+        background-color: #FFFFFF;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+        height: 100%;
+    }
+
+    .sme-card-header-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #E0E7FF;
+        color: #1D4ED8;
+        font-size: 1.2rem;
+    }
+
+    .sme-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background-color: #E0E7FF;
+        color: #1D4ED8;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-right: 6px;
+    }
+
+    .sme-price-card {
+        border-radius: 18px;
+        border: 1px solid #DBE2F3;
+        background-color: #FFFFFF;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        height: 100%;
+    }
+
+    .sme-price-badge {
+        background-color: #1D4ED8;
+        color: #FFFFFF;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        padding: 4px 10px;
+    }
+
+    .sme-faq-item {
+        border-radius: 14px;
+        border: 1px solid #E5E7EB;
+        background-color: #FFFFFF;
+        padding: 16px 18px;
+        margin-bottom: 10px;
+    }
+
+    .sme-cta {
+        border-radius: 22px;
+        background: linear-gradient(135deg, #2563EB, #1D4ED8);
+        color: #FFFFFF;
+        padding: 36px 32px;
+    }
+
+        .sme-cta p {
+            margin-bottom: 0;
+            color: #E0E7FF;
+        }
+
+    .sme-muted {
+        color: #4B5563;
+        font-size: 0.95rem;
+    }
+
+    .sme-footer {
+        background-color: #0F172A;
+        color: #9CA3AF;
+        padding: 32px 0;
+        font-size: 0.85rem;
+    }
+
+        .sme-footer a {
+            color: #E5E7EB;
+            text-decoration: none;
+        }
+
+            .sme-footer a:hover {
+                text-decoration: underline;
+            }
+
+</style>
+
+<!-- Header / Hero -->
+<section class="sme-hero">
+    <div class="container">
+        <div class="row align-items-center gy-4">
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <div class="sme-pill">
+                        <span></span>
+                        Trusted IT talent for SMEs
+                    </div>
+                </div>
+                <h1 class="display-5 mb-3">
+                    IT freelancers that help your
+                    <span class="fw-bold">small business grow</span>.
+                </h1>
+                <p class="mb-4">
+                    InternFreelance connects small and medium businesses with vetted IT talent —
+                    from websites to automations — so you can modernize operations without
+                    hiring a full in-house tech team.
+                </p>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <a asp-controller="Account"
+                       asp-action="Register"
+                       class="btn btn-light btn-lg fw-semibold px-4">
+                        Start a project
+                    </a>
+                    <a href="#sme-cta" class="btn btn-outline-light btn-lg px-4">
+                        Schedule a free consultation
+                    </a>
+                </div>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <div class="sme-muted">
+                        <strong>50+ SMEs</strong> supported with digital projects
+                    </div>
+                    <div style="width:1px;height:18px;background-color:#E0E7FF;"></div>
+                    <div class="sme-muted">
+                        Typical delivery: <strong>2–6 weeks</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 offset-lg-1">
+                <div class="sme-card p-4">
+                    <h5 class="mb-3">How it works</h5>
+                    <ol class="mb-3 sme-muted" style="padding-left: 18px;">
+                        <li>Tell us about your business and the outcome you want.</li>
+                        <li>We match you with suitable IT freelancers and interns.</li>
+                        <li>You approve the plan, track progress, and only pay for results.</li>
+                    </ol>
+                    <div class="small sme-muted mb-2">
+                        We take care of onboarding, task tracking and communication so you can
+                        stay focused on running your business.
+                    </div>
+                    <div class="small" style="color:#E0E7FF;">
+                        No long-term contracts. Flexible engagement starting from a single project.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits -->
+<section class="sme-section">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-2" style="color:#1D4ED8;">Why SMEs choose InternFreelance</h2>
+            <p class="sme-muted mb-0">
+                Practical technology, delivered at the pace and budget of small businesses.
+            </p>
+        </div>
+
+        <div class="row gy-4">
+            <div class="col-md-4">
+                <div class="sme-card p-4">
+                    <div class="sme-card-header-icon mb-3">
+                        <i class="bi bi-globe"></i>
+                    </div>
+                    <h5 class="mb-2">Stronger digital presence</h5>
+                    <p class="sme-muted mb-0">
+                        Professionally designed websites, online catalogs and booking systems
+                        that make your business easy to find and trust online.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-card p-4">
+                    <div class="sme-card-header-icon mb-3">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <h5 class="mb-2">Automation that saves time</h5>
+                    <p class="sme-muted mb-0">
+                        Automate repetitive tasks like invoicing, appointment reminders,
+                        inventory updates and customer follow-ups using proven tools.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-card p-4">
+                    <div class="sme-card-header-icon mb-3">
+                        <i class="bi bi-piggy-bank"></i>
+                    </div>
+                    <h5 class="mb-2">Cost-effective IT solutions</h5>
+                    <p class="sme-muted mb-0">
+                        Work with skilled freelancers and interns under expert supervision,
+                        so you get enterprise-grade outcomes at SME-friendly rates.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services -->
+<section class="sme-section-alt">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-2" style="color:#1D4ED8;">Services for small & medium businesses</h2>
+            <p class="sme-muted mb-0">
+                Pick a single project or combine several services into a long-term roadmap.
+            </p>
+        </div>
+
+        <div class="row gy-4">
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <div class="mb-2">
+                        <span class="sme-tag">Brand & Website</span>
+                    </div>
+                    <h5 class="mb-2">Business websites</h5>
+                    <p class="sme-muted">
+                        Modern, responsive sites that include services, testimonials,
+                        contact forms and basic SEO so customers can find and trust you.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Company profile sites</li>
+                        <li>Booking & contact forms</li>
+                        <li>Landing pages for campaigns</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <div class="mb-2">
+                        <span class="sme-tag">Operations</span>
+                    </div>
+                    <h5 class="mb-2">ERP & process systems</h5>
+                    <p class="sme-muted">
+                        Lightweight ERP setups to track inventory, orders, and finances
+                        without overwhelming your team.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Inventory & order tracking</li>
+                        <li>Simple dashboards & reports</li>
+                        <li>Integrations with existing tools</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <div class="mb-2">
+                        <span class="sme-tag">Customer Growth</span>
+                    </div>
+                    <h5 class="mb-2">CRM & customer management</h5>
+                    <p class="sme-muted">
+                        Keep all leads, customers and conversations in one place
+                        so you never lose a follow-up again.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Lead & pipeline tracking</li>
+                        <li>Email and WhatsApp workflows</li>
+                        <li>Customer history in one view</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row gy-4 mt-3">
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <div class="mb-2">
+                        <span class="sme-tag">Online Sales</span>
+                    </div>
+                    <h5 class="mb-2">E-commerce setup</h5>
+                    <p class="sme-muted">
+                        Launch an online store or ordering system with secure
+                        payments and inventory syncing.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Online catalogs & carts</li>
+                        <li>Payment gateway integration</li>
+                        <li>Basic shipping & tax rules</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <div class="mb-2">
+                        <span class="sme-tag">Automation</span>
+                    </div>
+                    <h5 class="mb-2">Business automation</h5>
+                    <p class="sme-muted">
+                        Connect the tools you already use (email, spreadsheets,
+                        accounting, CRM) to reduce manual work.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Automated reminders & alerts</li>
+                        <li>Data sync between systems</li>
+                        <li>Workflow design & setup</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <div class="mb-2">
+                        <span class="sme-tag">Advisory</span>
+                    </div>
+                    <h5 class="mb-2">Technology roadmap</h5>
+                    <p class="sme-muted">
+                        Not sure where to start? We help you decide which initiatives
+                        will create the most impact in the next 3–12 months.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Assessment of current tools</li>
+                        <li>Prioritized roadmap</li>
+                        <li>Simple, non-technical explanations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Case Studies -->
+<section class="sme-section">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-2" style="color:#1D4ED8;">Real results for real businesses</h2>
+            <p class="sme-muted mb-0">
+                A snapshot of how SMEs used our freelancers to drive growth.
+            </p>
+        </div>
+
+        <div class="row gy-4">
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <h6 class="text-uppercase small fw-bold mb-1" style="color:#2563EB;">
+                        Retail Store → Online
+                    </h6>
+                    <p class="fw-semibold mb-2">Local fashion boutique launched an online store</p>
+                    <p class="sme-muted small mb-2">
+                        We designed a branded storefront, catalog management and a simple
+                        order flow with integrated payments.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>35% revenue from online orders within 4 months</li>
+                        <li>Manual stock tracking replaced by shared dashboard</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <h6 class="text-uppercase small fw-bold mb-1" style="color:#2563EB;">
+                        Services → CRM
+                    </h6>
+                    <p class="fw-semibold mb-2">Small consulting firm organized its pipeline</p>
+                    <p class="sme-muted small mb-2">
+                        A simple CRM implementation consolidated leads from email,
+                        website forms and events into one place.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Response time to new leads cut by 60%</li>
+                        <li>Weekly revenue forecast visible to founders</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-card p-4 h-100">
+                    <h6 class="text-uppercase small fw-bold mb-1" style="color:#2563EB;">
+                        Manufacturing → Automation
+                    </h6>
+                    <p class="fw-semibold mb-2">Regional manufacturer automated order tracking</p>
+                    <p class="sme-muted small mb-2">
+                        We connected orders, production status and delivery tracking
+                        into a single live view for the operations team.
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>2 hours saved per day in manual updates</li>
+                        <li>Fewer delays and missed customer notifications</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="sme-section-alt">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-2" style="color:#1D4ED8;">Pricing tailored for SMEs</h2>
+            <p class="sme-muted mb-0">
+                Start small, prove value quickly, and scale only when you’re ready.
+            </p>
+        </div>
+
+        <div class="row gy-4">
+            <div class="col-md-4">
+                <div class="sme-price-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">Starter Project</h5>
+                        <span class="sme-price-badge">Most popular</span>
+                    </div>
+                    <p class="sme-muted small mb-3">
+                        Best for a single, well-defined initiative such as a landing page or basic automation.
+                    </p>
+                    <p class="mb-1">
+                        <span class="fw-bold" style="font-size:1.6rem;">$800 – $1,500</span>
+                        <span class="sme-muted small"> per project</span>
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Fixed scope & clear timeline</li>
+                        <li>Dedicated freelancer supervised by our team</li>
+                        <li>Email support & handover call</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-price-card p-4 h-100">
+                    <h5 class="mb-2">Growth Package</h5>
+                    <p class="sme-muted small mb-3">
+                        For SMEs wanting to combine several projects (e.g. website + CRM + automation).
+                    </p>
+                    <p class="mb-1">
+                        <span class="fw-bold" style="font-size:1.6rem;">$1,800 – $3,500</span>
+                        <span class="sme-muted small"> over 2–3 months</span>
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Prioritized roadmap and milestones</li>
+                        <li>Blended team of interns & senior overseer</li>
+                        <li>Monthly review call with clear metrics</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="sme-price-card p-4 h-100">
+                    <h5 class="mb-2">On-going Support</h5>
+                    <p class="sme-muted small mb-3">
+                        Keep a small technical team on call for updates, fixes and new ideas.
+                    </p>
+                    <p class="mb-1">
+                        <span class="fw-bold" style="font-size:1.6rem;">From $600</span>
+                        <span class="sme-muted small"> per month</span>
+                    </p>
+                    <ul class="sme-muted small mb-0">
+                        <li>Flexible hours each month</li>
+                        <li>Backlog of tasks tracked transparently</li>
+                        <li>Cancel or pause with 30 days’ notice</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center sme-muted mt-3 mb-0">
+            Every engagement starts with a clear proposal and no-surprise pricing.
+        </p>
+    </div>
+</section>
+
+<!-- FAQ + CTA -->
+<section class="sme-section" id="sme-cta">
+    <div class="container">
+        <div class="row gy-4 align-items-start">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-3" style="color:#1D4ED8;">Questions SMEs often ask</h2>
+
+                <div class="sme-faq-item">
+                    <div class="fw-semibold mb-1">“We’re not very technical. Will we understand what’s going on?”</div>
+                    <div class="sme-muted small mb-0">
+                        Yes. We avoid jargon, present options in simple language and keep you updated
+                        with short, business-focused summaries instead of long technical reports.
+                    </div>
+                </div>
+
+                <div class="sme-faq-item">
+                    <div class="fw-semibold mb-1">“How do you ensure quality if interns are involved?”</div>
+                    <div class="sme-muted small mb-0">
+                        Interns handle well-defined tasks while experienced engineers supervise
+                        architecture, code review and delivery. You get cost savings without
+                        compromising on reliability.
+                    </div>
+                </div>
+
+                <div class="sme-faq-item">
+                    <div class="fw-semibold mb-1">“What happens after the project is delivered?”</div>
+                    <div class="sme-muted small mb-0">
+                        We provide handover documentation, basic training for your team,
+                        and optional on-going support if you want us to stay involved.
+                    </div>
+                </div>
+
+                <div class="sme-faq-item mb-0">
+                    <div class="fw-semibold mb-1">“Can you work with tools we already use?”</div>
+                    <div class="sme-muted small mb-0">
+                        In most cases, yes. We start by understanding your current setup and
+                        suggest upgrades only when they create clear value.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 offset-lg-1">
+                <div class="sme-cta">
+                    <h3 class="fw-bold mb-2">Let’s talk about your business, not just technology.</h3>
+                    <p class="mb-3">
+                        Share where you are today and what you’d like to improve.
+                        We’ll propose 1–3 practical options with clear timelines and pricing.
+                    </p>
+                    <form>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Work email</label>
+                            <input type="email" class="form-control" placeholder="you@business.com" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Business name</label>
+                            <input type="text" class="form-control" placeholder="Your company" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small mb-1">What would you like help with?</label>
+                            <textarea class="form-control" rows="3"
+                                      placeholder="e.g. New website, CRM setup, automate invoicing…"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-light fw-semibold w-100 mb-2">
+                            Request a 30-minute consultation
+                        </button>
+                        <div class="small" style="color:#E0E7FF;">
+                            We typically respond within one business day. No pressure to start a project.
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="sme-footer">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            © @DateTime.UtcNow.Year InternFreelance. All rights reserved.
+        </div>
+        <div class="d-flex gap-3">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+</footer>

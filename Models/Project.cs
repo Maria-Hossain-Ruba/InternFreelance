@@ -12,6 +12,9 @@ namespace InternFreelance.Models
         public decimal? Budget { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Status { get; set; } = "Open";
+        public string? BriefFilePath { get; set; }          // e.g. "/project-files/abc123_brief.pdf"
+        public string? BriefOriginalFileName { get; set; }  // what SME uploaded (for display)
+
 
         public int OwnerId { get; set; }
         public AppUser? Owner { get; set; }

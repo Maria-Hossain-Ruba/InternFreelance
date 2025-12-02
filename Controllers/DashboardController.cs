@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using InternFreelance.Data;
 using InternFreelance.Models;
+using InternFreelance.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,9 @@ namespace InternFreelance.Controllers
 {
     public class DashboardController : Controller
     {
-        // --- DbContext helper (no DI) ---
+        // -------------------------------------------------
+        // DbContext helper (no DI)
+        // -------------------------------------------------
         private AppDbContext CreateDb()
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
@@ -21,7 +24,9 @@ namespace InternFreelance.Controllers
             return ctx;
         }
 
-        // --- current user from Session ---
+        // -------------------------------------------------
+        // Current user from Session
+        // -------------------------------------------------
         private async Task<AppUser?> GetCurrentUser(AppDbContext db)
         {
             var idString = HttpContext.Session.GetString("UserId");
@@ -31,7 +36,10 @@ namespace InternFreelance.Controllers
             return await db.UsersTable.FindAsync(id);
         }
 
-        // ===== SME DASHBOARD =====
+        // -------------------------------------------------
+        // SME DASHBOARD
+        // URL: /Dashboard/Sme
+        // -------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Sme()
         {
@@ -54,10 +62,14 @@ namespace InternFreelance.Controllers
                 CompletedProjects = myProjects.Count(p => p.Status == "Completed")
             };
 
-            return View(vm);   // Views/Dashboard/Sme.cshtml
+            // View: Views/Dashboard/Sme.cshtml
+            return View(vm);
         }
 
-        // ===== STUDENT DASHBOARD =====
+        // -------------------------------------------------
+        // STUDENT DASHBOARD
+        // URL: /Dashboard/Student
+        // -------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Student()
         {
@@ -67,31 +79,40 @@ namespace InternFreelance.Controllers
             if (user == null || user.Role != RoleType.Student)
                 return RedirectToAction("Login", "Account");
 
+            // StudentId is int, so compare with user.Id (int)
+            var studentId = user.Id;
+
             var apps = await db.Applications
                 .Include(a => a.Project)
-                .Where(a => a.StudentId == user.Id)
+                .Where(a => a.StudentId == studentId)
                 .OrderByDescending(a => a.AppliedAt)
                 .ToListAsync();
+
+            // Recent updates: accepted / rejected in last few days
+            var recentUpdates = apps
+                .Where(a => (a.Status == "Accepted" || a.Status == "Rejected") && a.StatusUpdatedAt != null)
+                .OrderByDescending(a => a.StatusUpdatedAt)
+                .Take(5)
+                .ToList();
 
             var vm = new StudentDashboardVm
             {
                 Student = user,
                 TotalApplications = apps.Count,
-                ActiveCount = apps.Count(a => a.Status == "Pending" || a.Status == "Accepted" || a.Status == "Assigned"),
+                ActiveCount = apps.Count(a =>
+                    a.Status == "Pending" || a.Status == "Accepted" || a.Status == "Assigned"),
                 CompletedCount = apps.Count(a => a.Status == "Completed"),
                 ActiveApplications = apps.Where(a => a.Status != "Completed").ToList(),
                 CompletedProjects = apps.Where(a => a.Status == "Completed").ToList(),
-                // for now just show open projects as "recommended"
                 RecommendedProjects = await db.Projects
                     .Where(p => p.Status == "Open")
                     .OrderByDescending(p => p.CreatedAt)
                     .Take(6)
-                    .ToListAsync()
+                    .ToListAsync(),
+                RecentUpdates = recentUpdates
             };
 
-            return View(vm);
+            return View(vm); // Views/Dashboard/Student.cshtml
         }
-
     }
-
 }

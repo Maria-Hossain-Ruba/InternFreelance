@@ -1,0 +1,95 @@
+﻿@model InternFreelance.Models.Project
+
+@{
+    ViewBag.Title = "Applications - " + Model.Title;
+}
+
+<div class="dash-page">
+    <div class="dash-page-header">
+        <div>
+            <div class="dash-page-title">Applications for @Model.Title</div>
+            <p class="dash-page-subtitle">
+                Review student CVs and accept or reject applications.
+            </p>
+        </div>
+    </div>
+
+    <div class="dash-row dash-row--full">
+        <section class="dash-card">
+            <div class="dash-card-header">
+                <div class="dash-card-title">Applicants</div>
+            </div>
+
+            @if (Model.Applications != null && Model.Applications.Any())
+            {
+                <div style="overflow-x:auto;">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Applied</th>
+                                <th>Status</th>
+                                <th>CV</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var app in Model.Applications.OrderByDescending(a => a.AppliedAt))
+                            {
+                                var statusClass = app.Status == "Accepted"
+                                ? "dash-status--accepted"
+                                : app.Status == "Rejected"
+                                ? "dash-status--pending"
+                                : "dash-status--assigned";
+
+                                <tr>
+                                    <td>@app.Student.FullName</td>
+                                    <td>@app.AppliedAt.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <span class="dash-status-pill @statusClass">@app.Status</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(app.CvPath))
+                                        {
+                                            <a href="@app.CvPath"
+                                               class="dash-link-muted"
+                                               target="_blank">
+                                                @(string.IsNullOrEmpty(app.CvOriginalFileName)
+                                                                                    ? "View CV"
+                                                                                    : app.CvOriginalFileName)
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="dash-card-subtitle">No CV</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; gap:0.4rem;">
+                                            <form asp-action="Accept" asp-controller="Applications"
+                                                  asp-route-id="@app.Id" method="post">
+                                                <button type="submit" class="dash-btn-ghost">Accept</button>
+                                            </form>
+                                            <form asp-action="Reject" asp-controller="Applications"
+                                                  asp-route-id="@app.Id" method="post">
+                                                <button type="submit"
+                                                        class="dash-btn-ghost"
+                                                        style="border-color:#fecaca;background:#fee2e2;color:#b91c1c;">
+                                                    Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="dash-card-subtitle">No applications yet.</p>
+            }
+        </section>
+    </div>
+</div>

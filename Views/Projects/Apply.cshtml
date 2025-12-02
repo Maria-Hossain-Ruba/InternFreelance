@@ -1,0 +1,45 @@
+﻿@model InternFreelance.ViewModels.ApplyProjectVm
+@{
+    ViewBag.Title = "Apply to project";
+}
+
+<div class="dash-page">
+    <div class="dash-page-header">
+        <div>
+            <div class="dash-page-title">Apply to @Model.Project.Title</div>
+            <p class="dash-page-subtitle">
+                Upload your CV and add a short note for the SME.
+            </p>
+        </div>
+    </div>
+
+    <div class="dash-row dash-row--full">
+        <section class="dash-card">
+            <form asp-action="Apply"
+                  asp-controller="Projects"
+                  asp-route-id="@Model.ProjectId"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <div class="mb-3">
+                    <label class="form-label">CV (PDF / DOC)</label>
+                    <input type="file" name="cvFile" class="form-control" />
+                    @* validation message for cvFile *@
+                    <span class="text-danger">
+                        @Html.ValidationMessage("cvFile")
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CoverLetter" class="form-label">Short note (optional)</label>
+                    <textarea asp-for="CoverLetter" rows="4" class="form-control"
+                              placeholder="Tell the SME why you’re a good fit."></textarea>
+                </div>
+
+                <button type="submit" class="lf-btn-primary">Submit application</button>
+                <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId"
+                   class="lf-btn-secondary ms-2">Cancel</a>
+            </form>
+        </section>
+    </div>
+</div>

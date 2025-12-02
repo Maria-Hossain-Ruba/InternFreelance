@@ -12,126 +12,434 @@
     var projects = Model.Projects ?? new List<Project>();
 }
 
-<div class="container py-4">
-    <!-- Top bar -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">Welcome back 👋</h2>
-            <p class="text-muted mb-0">
-                Manage your internship projects, review applications and track student progress.
-            </p>
-        </div>
-        <div>
-            <a asp-controller="Projects" asp-action="Create" class="btn btn-success">
-                + Post New Project
-            </a>
+<style>
+    /* ===== Soft Mint + Blue SaaS Theme ===== */
+
+    body {
+        background: linear-gradient(180deg, #E0F2FE 0%, #F9FAFB 40%, #ECFEFF 100%);
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #111827;
+    }
+
+    .sme-page {
+        padding-top: 32px;
+        padding-bottom: 40px;
+    }
+
+    /* HERO CARD */
+    .sme-hero {
+        position: relative;
+        background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), transparent 60%), radial-gradient(circle at bottom left, rgba(52, 211, 153, 0.16), transparent 60%), #FFFFFF;
+        border-radius: 18px;
+        padding: 24px 24px 22px 26px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        border: 1px solid #E2E8F0;
+        margin-bottom: 28px;
+        overflow: hidden;
+    }
+
+        .sme-hero::before {
+            /* subtle colored strip on the left */
+            content: "";
+            position: absolute;
+            inset: 0;
+            width: 6px;
+            background: linear-gradient(180deg, #38BDF8, #34D399);
+        }
+
+    .sme-hero-inner {
+        position: relative;
+        margin-left: 12px; /* compensate for the colored strip */
+    }
+
+    .sme-hero-title {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 6px;
+    }
+
+    .sme-hero-sub {
+        font-size: 0.95rem;
+        color: #4B5563;
+        max-width: 520px;
+    }
+
+    .sme-hero-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 11px;
+        border-radius: 999px;
+        background-color: #ECFEFF;
+        color: #0369A1;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .sme-hero-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #38BDF8, #34D399);
+    }
+
+    .btn-main {
+        background: linear-gradient(135deg, #34D399, #22C55E);
+        border-color: transparent;
+        color: #FFFFFF;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 999px;
+        padding: 8px 22px;
+    }
+
+        .btn-main:hover {
+            filter: brightness(1.05);
+            color: #FFFFFF;
+        }
+
+    .btn-secondary-soft {
+        border-radius: 999px;
+        border: 1px solid #CBD5F5;
+        background-color: #EFF6FF;
+        color: #1D4ED8;
+        font-size: 0.9rem;
+        padding: 8px 18px;
+    }
+
+        .btn-secondary-soft:hover {
+            background-color: #DBEAFE;
+        }
+
+    /* STATS */
+    .stat-card {
+        background: linear-gradient(135deg, #F9FAFB, #ECFEFF);
+        border-radius: 14px;
+        border: 1px solid #E5E7EB;
+        padding: 12px 14px;
+        text-align: left;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #6B7280;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-top: 4px;
+    }
+
+    .stat-note {
+        font-size: 0.8rem;
+        color: #6B7280;
+        margin-top: 2px;
+    }
+
+    /* SECTION HEADER */
+    .section-header {
+        margin-top: 18px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .section-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #0F172A;
+    }
+
+    .section-sub {
+        font-size: 0.88rem;
+        color: #6B7280;
+    }
+
+    /* PROJECT TABLE CARD */
+    .project-card {
+        background-color: #FFFFFF;
+        border-radius: 18px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 14px 32px rgba(148, 163, 184, 0.22);
+        overflow: hidden;
+    }
+
+        .project-card table {
+            margin-bottom: 0;
+        }
+
+        .project-card thead {
+            background: linear-gradient(90deg, #EFF6FF, #ECFEFF);
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .project-card th {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748B;
+            border: none;
+        }
+
+        .project-card td {
+            font-size: 0.9rem;
+            color: #111827;
+            border-top: 1px solid #E5E7EB;
+            vertical-align: middle;
+        }
+
+    .project-row:hover {
+        background-color: #F1F5F9;
+    }
+
+    .project-title {
+        font-weight: 600;
+        color: #0F172A;
+    }
+
+    .project-meta {
+        font-size: 0.8rem;
+        color: #6B7280;
+    }
+
+    /* STATUS CHIPS */
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 11px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-open {
+        background-color: #ECFEFF;
+        color: #0369A1;
+        border: 1px solid #7DD3FC;
+    }
+
+    .status-assigned {
+        background-color: #EEF2FF;
+        color: #4F46E5;
+        border: 1px solid #A5B4FC;
+    }
+
+    .status-completed {
+        background-color: #ECFDF5;
+        color: #15803D;
+        border: 1px solid #6EE7B7;
+    }
+
+    .row-action-btn {
+        font-size: 0.8rem;
+        padding: 5px 13px;
+        border-radius: 999px;
+    }
+
+    /* INFO STRIP */
+    .info-strip {
+        background: #FFFFFF;
+        border-radius: 16px;
+        border: 1px dashed #C7D2FE;
+        padding: 18px 18px;
+        margin-top: 22px;
+        box-shadow: 0 12px 28px rgba(148, 163, 184, 0.16);
+    }
+
+    .info-title {
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: #0F172A;
+        margin-bottom: 4px;
+    }
+
+    .info-text {
+        font-size: 0.86rem;
+        color: #4B5563;
+        margin-bottom: 6px;
+    }
+
+    .tag-pill {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background-color: #EFF6FF;
+        color: #1D4ED8;
+        font-size: 0.75rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+</style>
+
+<div class="container sme-page">
+
+    <!-- HERO -->
+    <div class="sme-hero">
+        <div class="sme-hero-inner">
+            <div class="row align-items-start gy-3">
+                <div class="col-md-7">
+                    <div class="sme-hero-pill">
+                        <span class="sme-hero-dot"></span>
+                        SME project workspace
+                    </div>
+
+                    <div class="sme-hero-title">
+                        Manage all your IT work from a single, focused dashboard.
+                    </div>
+
+                    <p class="sme-hero-sub">
+                        Post scoped projects, review applications from student talent,
+                        and follow each engagement from brief to completion without
+                        losing context in email threads.
+                    </p>
+
+                    <div class="mt-3">
+                        <a asp-controller="Projects" asp-action="Create" class="btn btn-main me-2">
+                            + Post a new project
+                        </a>
+                        <a href="#usage" class="btn btn-secondary-soft">
+                            How other SMEs use this
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="row g-3">
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-label">Total projects</div>
+                                <div class="stat-value">@total</div>
+                                <div class="stat-note">Created so far</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-label">Active</div>
+                                <div class="stat-value">@active</div>
+                                <div class="stat-note">Open or in delivery</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-label">Completed</div>
+                                <div class="stat-value">@completed</div>
+                                <div class="stat-note">Finished and closed</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Stats cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <small class="text-uppercase text-muted">Total Projects</small>
-                    <h3 class="fw-bold mt-2">@total</h3>
-                    <p class="small text-muted mb-0">
-                        All projects you've posted on InternFreelance.
-                    </p>
-                </div>
+    <!-- PROJECTS -->
+    <div class="section-header">
+        <div>
+            <div class="section-title">Your projects</div>
+            <div class="section-sub">
+                Review briefs, monitor status and open the applications for each posting.
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <small class="text-uppercase text-muted">Active</small>
-                    <h3 class="fw-bold mt-2">@active</h3>
-                    <p class="small text-muted mb-0">
-                        Open or assigned projects currently in progress.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <small class="text-uppercase text-muted">Completed</small>
-                    <h3 class="fw-bold mt-2">@completed</h3>
-                    <p class="small text-muted mb-0">
-                        Successfully finished projects delivered by students.
-                    </p>
-                </div>
-            </div>
-        </div>
+        <a asp-controller="Projects" asp-action="Create" class="btn btn-secondary-soft">
+            New project
+        </a>
     </div>
 
-    <!-- Projects list -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Your Projects</h5>
-            <a asp-controller="Projects" asp-action="Create" class="btn btn-sm btn-outline-success">
-                New Project
-            </a>
-        </div>
-
-        <div class="card-body p-0">
-            @if (!projects.Any())
-            {
-                <div class="p-4 text-center text-muted">
-                    You haven't posted any projects yet.
-                    <a asp-controller="Projects" asp-action="Create">Post your first project</a>.
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Title</th>
-                                <th>Created</th>
-                                <th>Status</th>
-                                <th class="text-end">Actions</th>
+    <div class="project-card">
+        @if (!projects.Any())
+        {
+            <div class="p-4 text-center section-sub">
+                You haven’t posted any projects yet.
+                <a asp-controller="Projects" asp-action="Create">Create your first project</a>.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in projects.OrderByDescending(p => p.CreatedAt))
+                        {
+                            <tr class="project-row">
+                                <td>
+                                    <div class="project-title">@p.Title</div>
+                                    <div class="project-meta">@p.Skills</div>
+                                </td>
+                                <td>@p.CreatedAt.ToShortDateString()</td>
+                                <td>
+                                    @{
+                                        string chipClass =
+                                        p.Status == "Completed" ? "status-chip status-completed" :
+                                        p.Status == "Assigned" ? "status-chip status-assigned" :
+                                        "status-chip status-open";
+                                    }
+                                    <span class="@chipClass">@p.Status</span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-controller="Projects"
+                                       asp-action="Details"
+                                       asp-route-id="@p.Id"
+                                       class="btn btn-outline-primary row-action-btn">
+                                        Details
+                                    </a>
+                                    <a asp-controller="Projects"
+                                       asp-action="Applications"
+                                       asp-route-projectId="@p.Id"
+                                       class="btn btn-outline-secondary row-action-btn ms-1">
+                                        Applications
+                                    </a>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var p in projects.OrderByDescending(p => p.CreatedAt))
-                            {
-                                <tr>
-                                    <td>
-                                        <div class="fw-semibold">@p.Title</div>
-                                        <div class="small text-muted">@p.Skills</div>
-                                    </td>
-                                    <td>@p.CreatedAt.ToShortDateString()</td>
-                                    <td>
-                                        <span class="badge
-                                                    @(p.Status == "Completed" ? "bg-success"
-                                                                                            : p.Status == "Assigned" ? "bg-primary"
-                                                                                            : "bg-secondary")">
-                                            @p.Status
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a asp-controller="Projects"
-                                           asp-action="Details"
-                                           asp-route-id="@p.Id"
-                                           class="btn btn-sm btn-outline-primary">
-                                            View
-                                        </a>
-                                        <a asp-controller="Projects"
-                                           asp-action="Applications"
-                                           asp-route-projectId="@p.Id"
-                                           class="btn btn-sm btn-outline-dark ms-1">
-                                            Applications
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <!-- INFO STRIP -->
+    <div id="usage" class="info-strip">
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <div class="info-title">Where this dashboard adds the most value</div>
+                <p class="info-text">
+                    SMEs use InternFreelance to move focused initiatives forward:
+                    projects that are too important to ignore, but do not require
+                    a full-time permanent hire.
+                </p>
+                <p class="info-text mb-0">
+                    Each project becomes a clear brief: candidates apply with CVs,
+                    you select the best fit, and all updates stay attached to the project record.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <div class="info-title">Common project types</div>
+                <div class="mb-1">
+                    <span class="tag-pill">Company website refresh</span>
+                    <span class="tag-pill">Landing page build</span>
+                    <span class="tag-pill">Basic CRM setup</span>
+                    <span class="tag-pill">Dashboard / reporting</span>
+                    <span class="tag-pill">Simple automation</span>
+                    <span class="tag-pill">E-commerce starter</span>
+                    <span class="tag-pill">Internal tool prototype</span>
                 </div>
-            }
+            </div>
         </div>
     </div>
 </div>
-

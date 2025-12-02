@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using InternFreelance.Data;
@@ -6,106 +7,153 @@ using InternFreelance.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using System.IO;
-
 
 namespace InternFreelance.Controllers
 {
     public class ProjectsController : Controller
     {
-        // Create DbContext manually (no DI)
+        // -------------------------------------------------
+        // DbContext helper (no DI)
+        // -------------------------------------------------
         private AppDbContext CreateDb()
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseSqlite("Data Source=internfreelance.db");
 
             var ctx = new AppDbContext(optionsBuilder.Options);
-            // make sure all tables (UsersTable, Projects, Applications, etc.) exist
             ctx.Database.EnsureCreated();
             return ctx;
         }
 
-        // helper to get current user from session
-        private async Task<AppUser?> GetCurrentUser(AppDbContext context)
+        // -------------------------------------------------
+        // Current user from Session
+        // -------------------------------------------------
+        private async Task<AppUser?> GetCurrentUser(AppDbContext db)
         {
             var idString = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(idString)) return null;
             if (!int.TryParse(idString, out var id)) return null;
 
-            return await context.UsersTable.FindAsync(id);
+            return await db.UsersTable.FindAsync(id);
         }
 
-        // GET: /Projects
+        // -------------------------------------------------
+        // LIST PROJECTS: /Projects
+        // -------------------------------------------------
+        // -------------------------------------------------
+        // LIST PROJECTS: /Projects?search=...
+        // -------------------------------------------------
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search)
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var projects = await _context.Projects
+            var query = db.Projects
                 .Include(p => p.Owner)
                 .OrderByDescending(p => p.CreatedAt)
-                .ToListAsync();
+                .AsQueryable();
 
-            return View(projects);
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                // very simple search on title / skills / description
+                query = query.Where(p =>
+                    p.Title.Contains(search) ||
+                    p.Skills.Contains(search) ||
+                    p.Description.Contains(search));
+            }
+
+            var projects = await query.ToListAsync();
+
+            ViewBag.Search = search; // optional, if you want to show it in the Projects/Index view
+            return View(projects);   // Views/Projects/Index.cshtml
         }
 
-        // GET: /Projects/Details/5
+
+        // -------------------------------------------------
+        // DETAILS: /Projects/Details/5
+        // -------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var project = await _context.Projects
+            var project = await db.Projects
                 .Include(p => p.Owner)
                 .Include(p => p.Applications)
                     .ThenInclude(a => a.Student)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project == null) return NotFound();
-            return View(project);
+
+            var user = await GetCurrentUser(db); // reads Session["UserId"]
+
+            bool isLoggedIn = user != null;
+            bool isStudent = user != null && user.Role == RoleType.Student;
+
+            bool projectOpen = !string.Equals(
+                project.Status,
+                "Completed",
+                StringComparison.OrdinalIgnoreCase
+            );
+
+            // Only students on open projects can apply
+            ViewBag.CanApply = isStudent && projectOpen;
+            ViewBag.IsLoggedIn = isLoggedIn;
+            ViewBag.IsStudent = isStudent;
+            ViewBag.ProjectOpen = projectOpen;
+
+            return View(project);    // Views/Projects/Details.cshtml
         }
 
-        // SME: list own projects
+        // -------------------------------------------------
+        // SME: MY PROJECTS: /Projects/MyProjects
+        // -------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> MyProjects()
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser(db);
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
 
-            var projects = await _context.Projects
+            var projects = await db.Projects
                 .Where(p => p.OwnerId == user.Id)
                 .Include(p => p.Applications)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
-            return View(projects);
+            return View(projects);   // Views/Projects/MyProjects.cshtml
         }
 
-        // SME: create project (GET)
+        // -------------------------------------------------
+        // SME: CREATE PROJECT (GET)  /Projects/Create
+        // -------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser(db);
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
 
-            return View(new Project());
+            return View(new Project());  // Views/Projects/Create.cshtml
         }
 
-        // SME: create project (POST)
+        // -------------------------------------------------
+        // SME: CREATE PROJECT (POST)
+        // with optional briefFile upload
+        // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Project project)
+        public async Task<IActionResult> Create(Project project, IFormFile? briefFile)
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser(db);
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
 
@@ -116,29 +164,53 @@ namespace InternFreelance.Controllers
             project.CreatedAt = DateTime.UtcNow;
             project.Status = "Open";
 
-            _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
+            // handle uploaded brief (optional)
+            if (briefFile != null && briefFile.Length > 0)
+            {
+                var rootPath = Directory.GetCurrentDirectory();
+                var folder = Path.Combine(rootPath, "wwwroot", "project-files");
 
-            // 🔥 redirect SME to dashboard after posting
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+
+                var safeFileName = $"{Guid.NewGuid()}_{Path.GetFileName(briefFile.FileName)}";
+                var filePath = Path.Combine(folder, safeFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await briefFile.CopyToAsync(stream);
+                }
+
+                project.BriefFilePath = "/project-files/" + safeFileName;
+                project.BriefOriginalFileName = briefFile.FileName;
+            }
+
+            db.Projects.Add(project);
+            await db.SaveChangesAsync();
+
             return RedirectToAction("Sme", "Dashboard");
         }
 
-        // Student: apply
+        // -------------------------------------------------
+        // STUDENT: APPLY WITH CV (POST)
+        // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Apply(int projectId, string coverLetter)
+        public async Task<IActionResult> Apply(int projectId, string? coverLetter, IFormFile cvFile)
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser(db);
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.Student) return Forbid();
 
-            var project = await _context.Projects.FindAsync(projectId);
+            var project = await db.Projects.FindAsync(projectId);
             if (project == null || project.Status == "Completed") return NotFound();
 
-            bool already = await _context.Applications
-                .AnyAsync(a => a.ProjectId == projectId && a.StudentId == user.Id);
+            var studentId = user.Id;   // 👈 int, matches FK
+
+            bool already = await db.Applications
+                .AnyAsync(a => a.ProjectId == projectId && a.StudentId == studentId);
 
             if (already)
             {
@@ -146,99 +218,60 @@ namespace InternFreelance.Controllers
                 return RedirectToAction("Details", new { id = projectId });
             }
 
-            var app = new ProjectApplication
-            {
-                ProjectId = projectId,
-                StudentId = user.Id,
-                CoverLetter = coverLetter,
-                Status = "Pending",
-                AppliedAt = DateTime.UtcNow
-            };
-
-            _context.Applications.Add(app);
-            await _context.SaveChangesAsync();
-
-            TempData["Msg"] = "Application submitted.";
-            return RedirectToAction("Details", new { id = projectId });
-        }
-
-        // Student: my applications
-        // Student: apply
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Apply(int projectId, string coverLetter, IFormFile cvFile)
-        {
-            using var _context = CreateDb();
-
-            var user = await GetCurrentUser(_context);
-            if (user == null) return RedirectToAction("Login", "Account");
-            if (user.Role != RoleType.Student) return Forbid();
-
-            var project = await _context.Projects.FindAsync(projectId);
-            if (project == null || project.Status == "Completed") return NotFound();
-
-            bool already = await _context.Applications
-                .AnyAsync(a => a.ProjectId == projectId && a.StudentId == user.Id);
-
-            if (already)
-            {
-                TempData["Msg"] = "You already applied for this project.";
-                return RedirectToAction("Details", new { id = projectId });
-            }
-
-            // ✅ REQUIRE CV
             if (cvFile == null || cvFile.Length == 0)
             {
                 TempData["Msg"] = "Please upload your CV (PDF or DOCX).";
                 return RedirectToAction("Details", new { id = projectId });
             }
 
-            // ✅ Save CV under wwwroot/cv
-            var rootPath = Directory.GetCurrentDirectory();
-            var cvFolder = Path.Combine(rootPath, "wwwroot", "cv");
+            // Save CV to wwwroot/cv
+            var root = Directory.GetCurrentDirectory();
+            var cvFolder = Path.Combine(root, "wwwroot", "cv");
 
             if (!Directory.Exists(cvFolder))
                 Directory.CreateDirectory(cvFolder);
 
             var uniqueName = $"{Guid.NewGuid()}_{Path.GetFileName(cvFile.FileName)}";
-            var filePath = Path.Combine(cvFolder, uniqueName);
+            var cvPath = Path.Combine(cvFolder, uniqueName);
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            using (var stream = new FileStream(cvPath, FileMode.Create))
             {
                 await cvFile.CopyToAsync(stream);
             }
 
-            // relative path for link
-            var relativePath = $"/cv/{uniqueName}";
+            var relativePath = "/cv/" + uniqueName;
 
             var app = new ProjectApplication
             {
                 ProjectId = projectId,
-                StudentId = user.Id,
+                StudentId = studentId,                     // 👈 int FK
                 CoverLetter = coverLetter ?? string.Empty,
                 Status = "Pending",
                 AppliedAt = DateTime.UtcNow,
-                CvPath = relativePath
+                CvPath = relativePath,
+                CvOriginalFileName = cvFile.FileName
             };
 
-            _context.Applications.Add(app);
-            await _context.SaveChangesAsync();
+            db.Applications.Add(app);
+            await db.SaveChangesAsync();
 
             TempData["Msg"] = "Application submitted with your CV.";
+            // Student goes back to their dashboard
             return RedirectToAction("Student", "Dashboard");
         }
 
-
-        // SME/Admin: view apps for a project
+        // -------------------------------------------------
+        // SME/Admin: VIEW APPLICATIONS FOR A PROJECT
+        // -------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Applications(int projectId)
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser(db);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var project = await _context.Projects
+            var project = await db.Projects
                 .Include(p => p.Applications)
                     .ThenInclude(a => a.Student)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
@@ -246,80 +279,167 @@ namespace InternFreelance.Controllers
             if (project == null) return NotFound();
             if (project.OwnerId != user.Id && user.Role != RoleType.Admin) return Forbid();
 
+            // This will look for Views/Projects/Applications.cshtml
             return View(project);
         }
 
-        // SME/Admin: accept application
+        // -------------------------------------------------
+        // SME/Admin: APPROVE APPLICATION
+        // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AcceptApplication(int appId)
+        public async Task<IActionResult> ApproveApplication(int applicationId)
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser(db);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var app = await _context.Applications
+            var app = await db.Applications
                 .Include(a => a.Project)
-                .FirstOrDefaultAsync(a => a.Id == appId);
+                .FirstOrDefaultAsync(a => a.Id == applicationId);
 
-            if (app == null || app.Project == null) return NotFound();
-            if (app.Project.OwnerId != user.Id && user.Role != RoleType.Admin) return Forbid();
+            if (app == null) return NotFound();
 
-            var all = await _context.Applications
-                .Where(a => a.ProjectId == app.ProjectId)
+            // SME / Admin only, and must own the project unless admin
+            if (user.Role != RoleType.Admin && app.Project.OwnerId != user.Id)
+                return Forbid();
+
+            // Accept this application
+            app.Status = "Accepted";
+            app.StatusUpdatedAt = DateTime.UtcNow;
+
+            // Reject all others for the same project
+            var others = await db.Applications
+                .Where(a => a.ProjectId == app.ProjectId && a.Id != app.Id)
                 .ToListAsync();
 
-            foreach (var a in all)
-                a.Status = a.Id == appId ? "Accepted" : "Rejected";
+            foreach (var other in others)
+            {
+                other.Status = "Rejected";
+                other.StatusUpdatedAt = DateTime.UtcNow;
+            }
 
+            // Mark project as assigned
             app.Project.Status = "Assigned";
-            await _context.SaveChangesAsync();
 
-            return RedirectToAction("Applications", new { projectId = app.ProjectId });
+            await db.SaveChangesAsync();
+
+            TempData["Msg"] = "Application approved and other applications rejected.";
+            return RedirectToAction(nameof(Applications), new { projectId = app.ProjectId });
         }
 
-        // Student: submit deliverable
+        // -------------------------------------------------
+        // SME/Admin: REJECT APPLICATION
+        // -------------------------------------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectApplication(int applicationId)
+        {
+            using var db = CreateDb();
+
+            var user = await GetCurrentUser(db);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var app = await db.Applications
+                .Include(a => a.Project)
+                .FirstOrDefaultAsync(a => a.Id == applicationId);
+
+            if (app == null) return NotFound();
+
+            if (user.Role != RoleType.Admin && app.Project.OwnerId != user.Id)
+                return Forbid();
+
+            app.Status = "Rejected";
+            app.StatusUpdatedAt = DateTime.UtcNow;
+
+            await db.SaveChangesAsync();
+
+            TempData["Msg"] = "Application rejected.";
+            return RedirectToAction(nameof(Applications), new { projectId = app.ProjectId });
+        }
+
+        // -------------------------------------------------
+        // SME/Admin: DOWNLOAD CV FILE
+        // -------------------------------------------------
+        [HttpGet]
+        public async Task<IActionResult> DownloadCv(int applicationId)
+        {
+            using var db = CreateDb();
+
+            var user = await GetCurrentUser(db);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var app = await db.Applications
+                .Include(a => a.Project)
+                .FirstOrDefaultAsync(a => a.Id == applicationId);
+
+            if (app == null) return NotFound();
+            if (user.Role != RoleType.Admin && app.Project.OwnerId != user.Id)
+                return Forbid();
+
+            if (string.IsNullOrEmpty(app.CvPath))
+                return NotFound();
+
+            var root = Directory.GetCurrentDirectory();
+            // CvPath is like "/cv/filename.ext"
+            var relative = app.CvPath.TrimStart('/');
+            var fullPath = Path.Combine(root, "wwwroot", relative);
+
+            if (!System.IO.File.Exists(fullPath))
+                return NotFound();
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+            var downloadName = app.CvOriginalFileName ?? "cv.pdf";
+
+            return File(bytes, "application/octet-stream", downloadName);
+        }
+
+        // -------------------------------------------------
+        // STUDENT: SUBMIT DELIVERABLE LINK
+        // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitDeliverable(int appId, string submissionUrl)
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser(db);
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.Student) return Forbid();
 
-            var app = await _context.Applications
+            var app = await db.Applications
                 .Include(a => a.Project)
-                .FirstOrDefaultAsync(a => a.Id == appId && a.StudentId == user.Id);
+                .FirstOrDefaultAsync(a => a.Id == appId && a.StudentId == user.Id);  // 👈 int compare
 
             if (app == null) return NotFound();
             if (app.Status != "Accepted") return Forbid();
 
             app.SubmissionUrl = submissionUrl;
-            await _context.SaveChangesAsync();
+            await db.SaveChangesAsync();
 
             TempData["Msg"] = "Work link submitted.";
-            return RedirectToAction("MyApplications");
+            return RedirectToAction("Student", "Dashboard");
         }
 
-        // SME/Admin: mark project completed
+        // -------------------------------------------------
+        // SME/Admin: MARK PROJECT COMPLETED
+        // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkCompleted(int projectId)
         {
-            using var _context = CreateDb();
+            using var db = CreateDb();
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser(db);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var project = await _context.Projects.FindAsync(projectId);
+            var project = await db.Projects.FindAsync(projectId);
             if (project == null) return NotFound();
             if (project.OwnerId != user.Id && user.Role != RoleType.Admin) return Forbid();
 
             project.Status = "Completed";
-            await _context.SaveChangesAsync();
+            await db.SaveChangesAsync();
 
             return RedirectToAction("MyProjects");
         }
