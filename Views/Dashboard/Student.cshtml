@@ -156,6 +156,7 @@
                                 <th>Project</th>
                                 <th>Status</th>
                                 <th>Applied</th>
+                                <th>Submission</th>  <!-- new -->
                                 <th></th>
                             </tr>
                         </thead>
@@ -171,10 +172,38 @@
 
                                 <tr>
                                     <td>@app.Project?.Title</td>
+
                                     <td>
                                         <span class="dash-status-pill @statusClass">@status</span>
                                     </td>
+
                                     <td>@app.AppliedAt.ToString("dd MMM yyyy")</td>
+
+                                    <!-- SUBMISSION COLUMN -->
+                                    <td>
+                                        @if (app.Status == "Accepted" || app.Status == "Assigned")
+                                        {
+                                            <a asp-controller="Student"
+                                               asp-action="SubmitWork"
+                                               asp-route-id="@app.Id"
+                                               class="dash-link-muted">
+                                                @(app.SubmittedAt == null ? "Submit work" : "Update submission")
+                                            </a>
+
+                                            @if (app.SubmittedAt != null)
+                                            {
+                                                <div class="dash-project-meta">
+                                                    Submitted on @app.SubmittedAt.Value.ToString("dd MMM yyyy")
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="dash-project-meta">Waiting for SME decision</span>
+                                        }
+                                    </td>
+
+                                    <!-- Existing View link -->
                                     <td>
                                         <a asp-controller="Projects"
                                            asp-action="Details"
@@ -196,59 +225,3 @@
         </section>
     </div>
 
-    <!-- Completed applications -->
-    <div class="dash-row dash-row--full">
-        <section class="dash-card">
-            <div class="dash-card-header">
-                <div>
-                    <div class="dash-card-title">Completed applications</div>
-                    <div class="dash-card-subtitle">
-                        Finished work you can show in your portfolio.
-                    </div>
-                </div>
-            </div>
-
-            @if (Model.CompletedProjects != null && Model.CompletedProjects.Any())
-            {
-                <div style="overflow-x:auto;">
-                    <table class="dash-table">
-                        <thead>
-                            <tr>
-                                <th>Project</th>
-                                <th>Status</th>
-                                <th>Applied</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var app in Model.CompletedProjects)
-                            {
-                                <tr>
-                                    <td>@app.Project?.Title</td>
-                                    <td>
-                                        <span class="dash-status-pill dash-status--completed">
-                                            @app.Status
-                                        </span>
-                                    </td>
-                                    <td>@app.AppliedAt.ToString("dd MMM yyyy")</td>
-                                    <td>
-                                        <a asp-controller="Projects"
-                                           asp-action="Details"
-                                           asp-route-id="@app.ProjectId"
-                                           class="dash-link-muted">
-                                            View →
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <p class="dash-card-subtitle">No completed applications yet.</p>
-            }
-        </section>
-    </div>
-</div>

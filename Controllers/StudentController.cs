@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using InternFreelance.Data;
 using InternFreelance.Models;
+using InternFreelance.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +12,6 @@ namespace InternFreelance.Controllers
 {
     public class StudentController : Controller
     {
-        // -------------------------------------------------
-        // DbContext helper (same style as your other controllers)
-        // -------------------------------------------------
         private AppDbContext CreateDb()
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
@@ -23,9 +22,6 @@ namespace InternFreelance.Controllers
             return ctx;
         }
 
-        // -------------------------------------------------
-        // Current user from Session
-        // -------------------------------------------------
         private async Task<AppUser?> GetCurrentUser(AppDbContext db)
         {
             var idString = HttpContext.Session.GetString("UserId");
@@ -35,10 +31,7 @@ namespace InternFreelance.Controllers
             return await db.UsersTable.FindAsync(id);
         }
 
-        // -------------------------------------------------
-        // STUDENT: My profile (self view)
-        // URL: /Student/Profile
-        // -------------------------------------------------
+        // /Student/Profile
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -48,30 +41,25 @@ namespace InternFreelance.Controllers
             if (user == null || user.Role != RoleType.Student)
                 return RedirectToAction("Login", "Account");
 
-            // User id as text
-            var userIdText = user.Id.ToString();
+            var studentId = user.Id;
 
-            // Compare as strings so it works whether StudentId is int or string
             var completedApps = await db.Applications
                 .Include(a => a.Project)
                 .Where(a =>
-                    a.StudentId.ToString() == userIdText &&
+                    a.StudentId == studentId &&
                     (a.Status == "Completed" || a.Status == "Accepted"))
                 .OrderByDescending(a => a.AppliedAt)
                 .ToListAsync();
 
             ViewBag.CompletedApps = completedApps;
-            ViewBag.IsOwner = true; // student viewing their own profile
+            ViewBag.IsOwner = true;
 
-            return View(user); // Views/Student/Profile.cshtml
+            return View(user);
         }
 
-        // -------------------------------------------------
-        // SME / ADMIN: View a student's profile from Applications
-        // URL: /Student/ViewProfile?studentId=123
-        // -------------------------------------------------
+        // /Student/ViewProfile?studentId=123
         [HttpGet]
-        public async Task<IActionResult> ViewProfile(string studentId)
+        public async Task<IActionResult> ViewProfile(int studentId)
         {
             using var db = CreateDb();
 
@@ -82,36 +70,27 @@ namespace InternFreelance.Controllers
             if (current.Role != RoleType.SME && current.Role != RoleType.Admin)
                 return Forbid();
 
-            if (string.IsNullOrWhiteSpace(studentId))
-                return NotFound();
-
-            // Find that student by ID (AppUser.Id is int)
             var student = await db.UsersTable
-                .FirstOrDefaultAsync(u => u.Id.ToString() == studentId && u.Role == RoleType.Student);
+                .FirstOrDefaultAsync(u => u.Id == studentId && u.Role == RoleType.Student);
 
             if (student == null)
                 return NotFound();
 
-            // Again, compare as strings to avoid int/string mismatch
             var completedApps = await db.Applications
                 .Include(a => a.Project)
                 .Where(a =>
-                    a.StudentId.ToString() == studentId &&
+                    a.StudentId == studentId &&
                     (a.Status == "Completed" || a.Status == "Accepted"))
                 .OrderByDescending(a => a.AppliedAt)
                 .ToListAsync();
 
             ViewBag.CompletedApps = completedApps;
-            ViewBag.IsOwner = false; // SME/Admin viewing, so no Edit button
+            ViewBag.IsOwner = false;
 
-            // Reuse the same profile view
             return View("Profile", student);
         }
 
-        // -------------------------------------------------
-        // STUDENT: Edit profile (GET)
-        // URL: /Student/EditProfile
-        // -------------------------------------------------
+        // GET: /Student/EditProfile
         [HttpGet]
         public async Task<IActionResult> EditProfile()
         {
@@ -121,12 +100,10 @@ namespace InternFreelance.Controllers
             if (user == null || user.Role != RoleType.Student)
                 return RedirectToAction("Login", "Account");
 
-            return View(user); // Views/Student/EditProfile.cshtml
+            return View(user);
         }
 
-        // -------------------------------------------------
-        // STUDENT: Edit profile (POST)
-        // -------------------------------------------------
+        // POST: /Student/EditProfile
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProfile(AppUser form)
@@ -137,7 +114,6 @@ namespace InternFreelance.Controllers
             if (user == null || user.Role != RoleType.Student)
                 return RedirectToAction("Login", "Account");
 
-            // Only update profile fields (no password, no role, etc.)
             user.Headline = form.Headline;
             user.Bio = form.Bio;
             user.SkillsCsv = form.SkillsCsv;
@@ -145,11 +121,84 @@ namespace InternFreelance.Controllers
             user.PortfolioUrl = form.PortfolioUrl;
             user.LinkedInUrl = form.LinkedInUrl;
             user.University = form.University;
-          
 
             await db.SaveChangesAsync();
 
             return RedirectToAction("Profile");
+        }
+
+        // GET: /Student/SubmitWork/5
+        [HttpGet]
+        public async Task<IActionResult> SubmitWork(int id)
+        {
+            using var db = CreateDb();
+
+            var user = await GetCurrentUser(db);
+            if (user == null || user.Role != RoleType.Student)
+                return RedirectToAction("Login", "Account");
+
+            var studentId = user.Id;
+
+            var app = await db.Applications
+                .Include(a => a.Project)
+                .FirstOrDefaultAsync(a => a.Id == id && a.StudentId == studentId);
+
+            if (app == null || (app.Status != "Accepted" && app.Status != "Assigned"))
+            {
+                TempData["Error"] = "You are not allowed to submit work for this project.";
+                return RedirectToAction("Student", "Dashboard");
+            }
+
+            var vm = new SubmitWorkViewModel
+            {
+                ApplicationId = app.Id,
+                ProjectTitle = app.Project.Title,
+                GithubUrl = app.SubmissionUrl ?? string.Empty,
+                LiveDemoUrl = app.SubmissionLiveDemoUrl,
+                Notes = app.SubmissionNotes
+            };
+
+            return View(vm);
+        }
+
+        // POST: /Student/SubmitWork
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitWork(SubmitWorkViewModel model)
+        {
+            using var db = CreateDb();
+
+            var user = await GetCurrentUser(db);
+            if (user == null || user.Role != RoleType.Student)
+                return RedirectToAction("Login", "Account");
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var studentId = user.Id;
+
+            var app = await db.Applications
+                .Include(a => a.Project)
+                .FirstOrDefaultAsync(a => a.Id == model.ApplicationId && a.StudentId == studentId);
+
+            if (app == null || (app.Status != "Accepted" && app.Status != "Assigned"))
+            {
+                TempData["Error"] = "You are not allowed to submit work for this project.";
+                return RedirectToAction("Student", "Dashboard");
+            }
+
+            app.SubmissionUrl = model.GithubUrl;
+            app.SubmissionLiveDemoUrl = model.LiveDemoUrl;
+            app.SubmissionNotes = model.Notes;
+            app.SubmittedAt = DateTime.UtcNow;
+            app.StatusUpdatedAt = DateTime.UtcNow;
+
+            await db.SaveChangesAsync();
+
+            TempData["Success"] = "Your work has been submitted successfully!";
+            return RedirectToAction("Student", "Dashboard");
         }
     }
 }

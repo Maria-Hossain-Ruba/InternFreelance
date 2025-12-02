@@ -38,10 +38,7 @@ namespace InternFreelance.Controllers
         }
 
         // -------------------------------------------------
-        // LIST PROJECTS: /Projects
-        // -------------------------------------------------
-        // -------------------------------------------------
-        // LIST PROJECTS: /Projects?search=...
+        // LIST PROJECTS: /Projects or /Projects?search=...
         // -------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Index(string? search)
@@ -69,7 +66,6 @@ namespace InternFreelance.Controllers
             ViewBag.Search = search; // optional, if you want to show it in the Projects/Index view
             return View(projects);   // Views/Projects/Index.cshtml
         }
-
 
         // -------------------------------------------------
         // DETAILS: /Projects/Details/5
@@ -144,8 +140,7 @@ namespace InternFreelance.Controllers
         }
 
         // -------------------------------------------------
-        // SME: CREATE PROJECT (POST)
-        // with optional briefFile upload
+        // SME: CREATE PROJECT (POST) with optional briefFile upload
         // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -194,6 +189,9 @@ namespace InternFreelance.Controllers
         // -------------------------------------------------
         // STUDENT: APPLY WITH CV (POST)
         // -------------------------------------------------
+        // -------------------------------------------------
+        // STUDENT: APPLY WITH CV (POST)
+        // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(int projectId, string? coverLetter, IFormFile cvFile)
@@ -207,7 +205,8 @@ namespace InternFreelance.Controllers
             var project = await db.Projects.FindAsync(projectId);
             if (project == null || project.Status == "Completed") return NotFound();
 
-            var studentId = user.Id;   // 👈 int, matches FK
+            // ✅ StudentId is int now
+            var studentId = user.Id;
 
             bool already = await db.Applications
                 .AnyAsync(a => a.ProjectId == projectId && a.StudentId == studentId);
@@ -244,21 +243,21 @@ namespace InternFreelance.Controllers
             var app = new ProjectApplication
             {
                 ProjectId = projectId,
-                StudentId = studentId,                     // 👈 int FK
+                StudentId = studentId,                     // ✅ int FK
                 CoverLetter = coverLetter ?? string.Empty,
                 Status = "Pending",
                 AppliedAt = DateTime.UtcNow,
                 CvPath = relativePath,
                 CvOriginalFileName = cvFile.FileName
-            };
+            } ;
 
             db.Applications.Add(app);
             await db.SaveChangesAsync();
 
             TempData["Msg"] = "Application submitted with your CV.";
-            // Student goes back to their dashboard
             return RedirectToAction("Student", "Dashboard");
         }
+
 
         // -------------------------------------------------
         // SME/Admin: VIEW APPLICATIONS FOR A PROJECT
@@ -396,7 +395,7 @@ namespace InternFreelance.Controllers
         }
 
         // -------------------------------------------------
-        // STUDENT: SUBMIT DELIVERABLE LINK
+        // STUDENT: SUBMIT DELIVERABLE LINK (legacy simple version)
         // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -408,9 +407,11 @@ namespace InternFreelance.Controllers
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.Student) return Forbid();
 
+            var studentId = user.Id;
+
             var app = await db.Applications
                 .Include(a => a.Project)
-                .FirstOrDefaultAsync(a => a.Id == appId && a.StudentId == user.Id);  // 👈 int compare
+                .FirstOrDefaultAsync(a => a.Id == appId && a.StudentId == studentId);
 
             if (app == null) return NotFound();
             if (app.Status != "Accepted") return Forbid();
