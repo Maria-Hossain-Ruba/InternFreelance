@@ -1,0 +1,99 @@
+﻿@model InternFreelance.ViewModels.ReviewSubmissionViewModel
+
+@{
+    ViewData["Title"] = "Review Submission";
+}
+
+<div class="dash-page">
+    <div class="dash-page-header">
+        <div>
+            <div class="dash-page-title">Review submission</div>
+            <p class="dash-page-subtitle">
+                Give feedback and a rating for this student's work.
+            </p>
+        </div>
+    </div>
+
+    <div class="dash-row dash-row--full">
+        <section class="dash-card">
+            <div class="dash-card-header">
+                <div>
+                    <div class="dash-card-title">@Model.ProjectTitle</div>
+                    <div class="dash-card-subtitle">
+                        Student: @Model.StudentName
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="dash-project-meta">
+                    <strong>GitHub repo:</strong>
+                    @if (!string.IsNullOrWhiteSpace(Model.GithubUrl))
+                    {
+                        <a href="@Model.GithubUrl" target="_blank" class="dash-link-muted">
+                            @Model.GithubUrl
+                        </a>
+                    }
+                    else
+                    {
+                        <span>No repository URL provided.</span>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.LiveDemoUrl))
+                {
+                    <div class="dash-project-meta">
+                        <strong>Live demo:</strong>
+                        <a href="@Model.LiveDemoUrl" target="_blank" class="dash-link-muted">
+                            @Model.LiveDemoUrl
+                        </a>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <div class="dash-project-meta" style="margin-top:0.75rem;">
+                        <strong>Submission notes:</strong>
+                        <div>@Model.Notes</div>
+                    </div>
+                }
+            </div>
+
+            <form asp-action="ReviewSubmission" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ApplicationId" />
+
+                <div class="mb-3">
+                    <label asp-for="Rating" class="form-label"></label>
+                    <input asp-for="Rating" class="form-control" type="number" min="1" max="5" />
+                    <span asp-validation-for="Rating" class="text-danger"></span>
+                    <div class="dash-project-meta">
+                        Enter a rating from 1 (poor) to 5 (excellent).
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Feedback" class="form-label"></label>
+                    <textarea asp-for="Feedback" class="form-control" rows="5"
+                              placeholder="Share specific feedback, what went well, and what can be improved."></textarea>
+                    <span asp-validation-for="Feedback" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Save review &amp; complete project
+                </button>
+                <a asp-action="Applications"
+                   asp-route-projectId="@Context.Request.Query["projectId"]"
+                   class="btn btn-outline-secondary ms-2">
+                    Back
+                </a>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -29,7 +29,15 @@ namespace InternFreelance.Models
         public string? SubmissionLiveDemoUrl { get; set; }    // optional live demo
         public string? SubmissionNotes { get; set; }          // notes for SME
         public DateTime? SubmittedAt { get; set; }            // when submitted
+        // 🔹 SME review
+        public int? Rating { get; set; }                      // 1–5
+        public string? Feedback { get; set; }                 // text feedback
+        public DateTime? ReviewedAt { get; set; }             // when SME reviewed
 
+        // 🔹 Certificate placeholders (we'll use later)
+        public string? CertificatePath { get; set; }
+        public string? CertificateCode { get; set; }
+        public DateTime? CertificateIssuedAt { get; set; }
         // 🔹 NAVIGATION PROPERTIES
         public Project Project { get; set; } = null!;
         public AppUser Student { get; set; } = null!;

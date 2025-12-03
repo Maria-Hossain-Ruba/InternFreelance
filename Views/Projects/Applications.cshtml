@@ -185,6 +185,51 @@
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Status</th>
+                                    <th>Applied</th>
+                                    <th>Submission</th>  <!-- new -->
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var app in Model.Applications)
+                                {
+                                    <tr>
+                                        <td>@app.Student.FullName (@app.Student.Email)</td>
+                                        <td>@app.Status</td>
+                                        <td>@app.AppliedAt.ToString("dd MMM yyyy")</td>
+
+                                        <td>
+                                            @if (app.SubmittedAt != null)
+                                            {
+                                                <div class="dash-project-meta">
+                                                    Submitted on @app.SubmittedAt.Value.ToString("dd MMM yyyy")
+                                                </div>
+
+                                                <a asp-action="ReviewSubmission"
+                                                   asp-route-applicationId="@app.Id"
+                                                   class="dash-link-muted">
+                                                    @(app.Rating.HasValue ? "Update review" : "Review submission")
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="dash-project-meta">
+                                                    Waiting for student submission
+                                                </span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            <!-- existing Download CV / Approve / Reject buttons can stay here -->
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+
                             <tbody>
                                 @foreach (var app in apps.OrderByDescending(a => a.AppliedAt))
                                 {

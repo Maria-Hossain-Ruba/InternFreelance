@@ -7,6 +7,8 @@ using InternFreelance.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using InternFreelance.ViewModels;
+
 
 namespace InternFreelance.Controllers
 {
@@ -393,6 +395,101 @@ namespace InternFreelance.Controllers
 
             return File(bytes, "application/octet-stream", downloadName);
         }
+        // -------------------------------------------------
+        // SME/Admin: REVIEW A SUBMISSION (GET)
+        // URL: /Projects/ReviewSubmission/5
+        // -------------------------------------------------
+        [HttpGet]
+        public async Task<IActionResult> ReviewSubmission(int applicationId)
+        {
+            using var db = CreateDb();
+
+            var user = await GetCurrentUser(db);
+            if (user == null) return RedirectToAction("Login", "Account");
+            if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
+
+            var app = await db.Applications
+                .Include(a => a.Project)
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.Id == applicationId);
+
+            if (app == null) return NotFound();
+
+            // SME must own the project (unless admin)
+            if (user.Role != RoleType.Admin && app.Project.OwnerId != user.Id)
+                return Forbid();
+
+            if (app.SubmittedAt == null)
+            {
+                TempData["Msg"] = "The student has not submitted work yet.";
+                return RedirectToAction(nameof(Applications), new { projectId = app.ProjectId });
+            }
+
+            var vm = new ReviewSubmissionViewModel
+            {
+                ApplicationId = app.Id,
+                ProjectTitle = app.Project.Title,
+                StudentName = app.Student.FullName,
+                GithubUrl = app.SubmissionUrl,
+                LiveDemoUrl = app.SubmissionLiveDemoUrl,
+                Notes = app.SubmissionNotes,
+                Rating = app.Rating ?? 5,          // default 5 if not rated yet
+                Feedback = app.Feedback
+            };
+
+            return View(vm);   // Views/Projects/ReviewSubmission.cshtml
+        }
+
+        // -------------------------------------------------
+        // SME/Admin: REVIEW A SUBMISSION (POST)
+        // -------------------------------------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReviewSubmission(ReviewSubmissionViewModel model)
+        {
+            using var db = CreateDb();
+
+            var user = await GetCurrentUser(db);
+            if (user == null) return RedirectToAction("Login", "Account");
+            if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var app = await db.Applications
+                .Include(a => a.Project)
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.Id == model.ApplicationId);
+
+            if (app == null) return NotFound();
+
+            if (user.Role != RoleType.Admin && app.Project.OwnerId != user.Id)
+                return Forbid();
+
+            if (app.SubmittedAt == null)
+            {
+                TempData["Msg"] = "The student has not submitted work yet.";
+                return RedirectToAction(nameof(Applications), new { projectId = app.ProjectId });
+            }
+
+            // Save rating + feedback
+            app.Rating = model.Rating;
+            app.Feedback = model.Feedback;
+            app.ReviewedAt = DateTime.UtcNow;
+            app.Status = "Completed";
+            app.StatusUpdatedAt = DateTime.UtcNow;
+
+            // Mark project as completed too
+            app.Project.Status = "Completed";
+
+            await db.SaveChangesAsync();
+
+            TempData["Msg"] = "Review saved. Project marked as completed.";
+            return RedirectToAction(nameof(Applications), new { projectId = app.ProjectId });
+        }
+
 
         // -------------------------------------------------
         // STUDENT: SUBMIT DELIVERABLE LINK (legacy simple version)
