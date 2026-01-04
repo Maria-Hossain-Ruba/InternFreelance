@@ -9,25 +9,19 @@ namespace InternFreelance.Controllers
 {
     public class HomeController : Controller
     {
-        // Simple DbContext helper (same pattern as your other controllers)
-        private AppDbContext CreateDb()
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseSqlite("Data Source=internfreelance.db");
+        private readonly AppDbContext _db;
 
-            var ctx = new AppDbContext(optionsBuilder.Options);
-            ctx.Database.EnsureCreated();
-            return ctx;
+        public HomeController(AppDbContext db)
+        {
+            _db = db;
         }
 
         // Landing page
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            using var db = CreateDb();
-
             // Latest open/assigned projects for the live board (right side)
-            var projects = await db.Projects
+            var projects = await _db.Projects
                 .Where(p => p.Status == "Open" || p.Status == "Assigned")
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(6)

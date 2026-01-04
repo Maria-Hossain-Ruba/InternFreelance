@@ -8,41 +8,37 @@ namespace InternFreelance.Controllers
 {
     public class AdminController : Controller
     {
-        // create DbContext manually (same pattern as Account/Projects)
-        private AppDbContext CreateDb()
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseSqlite("Data Source=internfreelance.db");
+        private readonly AppDbContext _db;
 
-            var ctx = new AppDbContext(optionsBuilder.Options);
-            ctx.Database.EnsureCreated();
-            return ctx;
+        public AdminController(AppDbContext db)
+        {
+            _db = db;
         }
 
-        private async Task<AppUser?> GetCurrentUser(AppDbContext context)
+        private async Task<AppUser?> GetCurrentUser()
         {
             var idString = HttpContext.Session.GetString("UserId");
             if (idString == null) return null;
             if (!int.TryParse(idString, out var id)) return null;
 
-            return await context.UsersTable.FindAsync(id);
+            return await _db.UsersTable.FindAsync(id);
         }
 
         public async Task<IActionResult> Dashboard()
         {
-            using var _context = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(_context);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.Admin) return Forbid();
 
-            ViewBag.UserCount = await _context.UsersTable.CountAsync();
-            ViewBag.ProjectCount = await _context.Projects.CountAsync();
-            ViewBag.OpenProjects = await _context.Projects.CountAsync(p => p.Status == "Open");
-            ViewBag.AssignedProjects = await _context.Projects.CountAsync(p => p.Status == "Assigned");
-            ViewBag.CompletedProjects = await _context.Projects.CountAsync(p => p.Status == "Completed");
+            ViewBag.UserCount = await _db.UsersTable.CountAsync();
+            ViewBag.ProjectCount = await _db.Projects.CountAsync();
+            ViewBag.OpenProjects = await _db.Projects.CountAsync(p => p.Status == "Open");
+            ViewBag.AssignedProjects = await _db.Projects.CountAsync(p => p.Status == "Assigned");
+            ViewBag.CompletedProjects = await _db.Projects.CountAsync(p => p.Status == "Completed");
 
-            var latestProjects = await _context.Projects
+            var latestProjects = await _db.Projects
                 .Include(p => p.Owner)
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(5)

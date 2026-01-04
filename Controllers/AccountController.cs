@@ -10,15 +10,11 @@ namespace InternFreelance.Controllers
 {
     public class AccountController : Controller
     {
-        // DbContext helper (same pattern as other controllers)
-        private AppDbContext CreateDb()
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseSqlite("Data Source=internfreelance.db");
+        private readonly AppDbContext _db;
 
-            var ctx = new AppDbContext(optionsBuilder.Options);
-            ctx.Database.EnsureCreated();
-            return ctx;
+        public AccountController(AppDbContext db)
+        {
+            _db = db;
         }
 
         // ---------------------- LOGIN ----------------------
@@ -39,10 +35,8 @@ namespace InternFreelance.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            using var db = CreateDb();
-
             // ⚠️ Adjust Email/Password property names if your AppUser is different
-            var user = await db.UsersTable
+            var user = await _db.UsersTable
                 .FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
 
             if (user == null)
@@ -79,10 +73,8 @@ namespace InternFreelance.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            using var db = CreateDb();
-
             // check duplicate email
-            var exists = await db.UsersTable.AnyAsync(u => u.Email == model.Email);
+            var exists = await _db.UsersTable.AnyAsync(u => u.Email == model.Email);
             if (exists)
             {
                 ModelState.AddModelError(nameof(model.Email), "An account with this email already exists.");
@@ -97,8 +89,8 @@ namespace InternFreelance.Controllers
                 Role = model.Role
             };
 
-            db.UsersTable.Add(user);
-            await db.SaveChangesAsync();
+            _db.UsersTable.Add(user);
+            await _db.SaveChangesAsync();
 
             // log user in after registration
             HttpContext.Session.SetString("UserId", user.Id.ToString());

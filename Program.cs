@@ -1,9 +1,17 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using InternFreelance.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+// DB CONTEXT - SQL Server
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // MVC
 builder.Services.AddControllersWithViews();
@@ -19,8 +27,17 @@ builder.Services.AddSession(options =>
 
 // HttpContext in controllers/views
 builder.Services.AddHttpContextAccessor();
+Console.WriteLine("DefaultConnection = " + builder.Configuration.GetConnectionString("DefaultConnection"));
+
 
 var app = builder.Build();
+
+// AUTO-APPLY MIGRATIONS ON STARTUP
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 // ERROR HANDLING
 if (!app.Environment.IsDevelopment())

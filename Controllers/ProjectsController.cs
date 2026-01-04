@@ -14,29 +14,23 @@ namespace InternFreelance.Controllers
 {
     public class ProjectsController : Controller
     {
-        // -------------------------------------------------
-        // DbContext helper (no DI)
-        // -------------------------------------------------
-        private AppDbContext CreateDb()
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseSqlite("Data Source=internfreelance.db");
+        private readonly AppDbContext _db;
 
-            var ctx = new AppDbContext(optionsBuilder.Options);
-            ctx.Database.EnsureCreated();
-            return ctx;
+        public ProjectsController(AppDbContext db)
+        {
+            _db = db;
         }
 
         // -------------------------------------------------
         // Current user from Session
         // -------------------------------------------------
-        private async Task<AppUser?> GetCurrentUser(AppDbContext db)
+        private async Task<AppUser?> GetCurrentUser()
         {
             var idString = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(idString)) return null;
             if (!int.TryParse(idString, out var id)) return null;
 
-            return await db.UsersTable.FindAsync(id);
+            return await _db.UsersTable.FindAsync(id);
         }
 
         // -------------------------------------------------
@@ -45,9 +39,9 @@ namespace InternFreelance.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? search)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var query = db.Projects
+            var query = _db.Projects
                 .Include(p => p.Owner)
                 .OrderByDescending(p => p.CreatedAt)
                 .AsQueryable();
@@ -75,9 +69,9 @@ namespace InternFreelance.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var project = await db.Projects
+            var project = await _db.Projects
                 .Include(p => p.Owner)
                 .Include(p => p.Applications)
                     .ThenInclude(a => a.Student)
@@ -85,7 +79,7 @@ namespace InternFreelance.Controllers
 
             if (project == null) return NotFound();
 
-            var user = await GetCurrentUser(db); // reads Session["UserId"]
+            var user = await GetCurrentUser(); // reads Session["UserId"]
 
             bool isLoggedIn = user != null;
             bool isStudent = user != null && user.Role == RoleType.Student;
@@ -111,13 +105,13 @@ namespace InternFreelance.Controllers
         [HttpGet]
         public async Task<IActionResult> MyProjects()
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
 
-            var projects = await db.Projects
+            var projects = await _db.Projects
                 .Where(p => p.OwnerId == user.Id)
                 .Include(p => p.Applications)
                 .OrderByDescending(p => p.CreatedAt)
@@ -132,9 +126,9 @@ namespace InternFreelance.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
 
@@ -143,14 +137,15 @@ namespace InternFreelance.Controllers
 
         // -------------------------------------------------
         // SME: CREATE PROJECT (POST) with optional briefFile upload
+        // TODO: Add file size validation
         // -------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Project project, IFormFile? briefFile)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
 
@@ -182,8 +177,8 @@ namespace InternFreelance.Controllers
                 project.BriefOriginalFileName = briefFile.FileName;
             }
 
-            db.Projects.Add(project);
-            await db.SaveChangesAsync();
+            _db.Projects.Add(project);
+            await _db.SaveChangesAsync();
 
             return RedirectToAction("Sme", "Dashboard");
         }
@@ -198,19 +193,19 @@ namespace InternFreelance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(int projectId, string? coverLetter, IFormFile cvFile)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.Student) return Forbid();
 
-            var project = await db.Projects.FindAsync(projectId);
+            var project = await _db.Projects.FindAsync(projectId);
             if (project == null || project.Status == "Completed") return NotFound();
 
             // ✅ StudentId is int now
             var studentId = user.Id;
 
-            bool already = await db.Applications
+            bool already = await _db.Applications
                 .AnyAsync(a => a.ProjectId == projectId && a.StudentId == studentId);
 
             if (already)
@@ -253,8 +248,8 @@ namespace InternFreelance.Controllers
                 CvOriginalFileName = cvFile.FileName
             } ;
 
-            db.Applications.Add(app);
-            await db.SaveChangesAsync();
+            _db.Applications.Add(app);
+            await _db.SaveChangesAsync();
 
             TempData["Msg"] = "Application submitted with your CV.";
             return RedirectToAction("Student", "Dashboard");
@@ -267,12 +262,12 @@ namespace InternFreelance.Controllers
         [HttpGet]
         public async Task<IActionResult> Applications(int projectId)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var project = await db.Projects
+            var project = await _db.Projects
                 .Include(p => p.Applications)
                     .ThenInclude(a => a.Student)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
@@ -291,12 +286,12 @@ namespace InternFreelance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveApplication(int applicationId)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var app = await db.Applications
+            var app = await _db.Applications
                 .Include(a => a.Project)
                 .FirstOrDefaultAsync(a => a.Id == applicationId);
 
@@ -311,7 +306,7 @@ namespace InternFreelance.Controllers
             app.StatusUpdatedAt = DateTime.UtcNow;
 
             // Reject all others for the same project
-            var others = await db.Applications
+            var others = await _db.Applications
                 .Where(a => a.ProjectId == app.ProjectId && a.Id != app.Id)
                 .ToListAsync();
 
@@ -324,7 +319,7 @@ namespace InternFreelance.Controllers
             // Mark project as assigned
             app.Project.Status = "Assigned";
 
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             TempData["Msg"] = "Application approved and other applications rejected.";
             return RedirectToAction(nameof(Applications), new { projectId = app.ProjectId });
@@ -337,12 +332,12 @@ namespace InternFreelance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectApplication(int applicationId)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var app = await db.Applications
+            var app = await _db.Applications
                 .Include(a => a.Project)
                 .FirstOrDefaultAsync(a => a.Id == applicationId);
 
@@ -354,7 +349,7 @@ namespace InternFreelance.Controllers
             app.Status = "Rejected";
             app.StatusUpdatedAt = DateTime.UtcNow;
 
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             TempData["Msg"] = "Application rejected.";
             return RedirectToAction(nameof(Applications), new { projectId = app.ProjectId });
@@ -366,12 +361,12 @@ namespace InternFreelance.Controllers
         [HttpGet]
         public async Task<IActionResult> DownloadCv(int applicationId)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var app = await db.Applications
+            var app = await _db.Applications
                 .Include(a => a.Project)
                 .FirstOrDefaultAsync(a => a.Id == applicationId);
 
@@ -402,13 +397,13 @@ namespace InternFreelance.Controllers
         [HttpGet]
         public async Task<IActionResult> ReviewSubmission(int applicationId)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
 
-            var app = await db.Applications
+            var app = await _db.Applications
                 .Include(a => a.Project)
                 .Include(a => a.Student)
                 .FirstOrDefaultAsync(a => a.Id == applicationId);
@@ -447,9 +442,9 @@ namespace InternFreelance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReviewSubmission(ReviewSubmissionViewModel model)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.SME && user.Role != RoleType.Admin) return Forbid();
 
@@ -458,7 +453,7 @@ namespace InternFreelance.Controllers
                 return View(model);
             }
 
-            var app = await db.Applications
+            var app = await _db.Applications
                 .Include(a => a.Project)
                 .Include(a => a.Student)
                 .FirstOrDefaultAsync(a => a.Id == model.ApplicationId);
@@ -484,7 +479,7 @@ namespace InternFreelance.Controllers
             // Mark project as completed too
             app.Project.Status = "Completed";
 
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             TempData["Msg"] = "Review saved. Project marked as completed.";
             return RedirectToAction(nameof(Applications), new { projectId = app.ProjectId });
@@ -498,15 +493,15 @@ namespace InternFreelance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitDeliverable(int appId, string submissionUrl)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
             if (user.Role != RoleType.Student) return Forbid();
 
             var studentId = user.Id;
 
-            var app = await db.Applications
+            var app = await _db.Applications
                 .Include(a => a.Project)
                 .FirstOrDefaultAsync(a => a.Id == appId && a.StudentId == studentId);
 
@@ -514,7 +509,7 @@ namespace InternFreelance.Controllers
             if (app.Status != "Accepted") return Forbid();
 
             app.SubmissionUrl = submissionUrl;
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             TempData["Msg"] = "Work link submitted.";
             return RedirectToAction("Student", "Dashboard");
@@ -527,17 +522,17 @@ namespace InternFreelance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkCompleted(int projectId)
         {
-            using var db = CreateDb();
+            // Db injected via DI
 
-            var user = await GetCurrentUser(db);
+            var user = await GetCurrentUser();
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var project = await db.Projects.FindAsync(projectId);
+            var project = await _db.Projects.FindAsync(projectId);
             if (project == null) return NotFound();
             if (project.OwnerId != user.Id && user.Role != RoleType.Admin) return Forbid();
 
             project.Status = "Completed";
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             return RedirectToAction("MyProjects");
         }

@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Http
-@using Microsoft.EntityFrameworkCore
 @using InternFreelance.Data
 @using InternFreelance.Models
+@inject InternFreelance.Data.AppDbContext db
 
 @{
     Layout = null;
@@ -14,18 +14,11 @@
 
     if (isLoggedIn && int.TryParse(idString, out var uid))
     {
-        // read role from DB once so we know if Student or SME
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite("Data Source=internfreelance.db")
-            .Options;
-
-        using (var db = new AppDbContext(options))
+        // Use the injected DbContext (configured in Program.cs via appsettings.json)
+        var user = db.UsersTable.Find(uid);
+        if (user != null)
         {
-            var user = db.UsersTable.Find(uid);
-            if (user != null)
-            {
-                currentRole = user.Role;
-            }
+            currentRole = user.Role;
         }
     }
 }
@@ -88,10 +81,10 @@
                             </a>
                         </li>
                     }
+
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Student" asp-action="Profile">My profile</a>
                     </li>
-
 
                     @if (isLoggedIn && currentRole == RoleType.SME)
                     {
