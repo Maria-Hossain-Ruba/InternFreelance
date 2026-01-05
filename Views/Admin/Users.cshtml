@@ -1,0 +1,53 @@
+﻿@using InternFreelance.Models
+@model List<AppUser>
+
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<h2 class="mb-3">Manage Users</h2>
+
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-info">@TempData["Msg"]</div>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th style="width: 260px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in Model)
+        {
+            <tr>
+                <td>@(u.FullName ?? "-")</td>
+                <td>@u.Email</td>
+                <td><span class="badge bg-secondary">@u.Role</span></td>
+                <td>
+                    <form asp-action="ChangeRole" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@u.Id" />
+                        <select name="role" class="form-select form-select-sm d-inline" style="width: 120px;">
+                            <option value="Student">Student</option>
+                            <option value="SME">SME</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                        <button class="btn btn-sm btn-primary">Update</button>
+                    </form>
+
+                    <form asp-action="DeleteUser" method="post" class="d-inline ms-1"
+                          onsubmit="return confirm('Delete this user?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@u.Id" />
+                        <button class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

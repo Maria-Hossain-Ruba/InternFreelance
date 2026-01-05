@@ -1,0 +1,44 @@
+﻿@using InternFreelance.Models
+@model List<Project>
+
+@{
+    ViewData["Title"] = "Manage Projects";
+}
+
+<h2 class="mb-3">Manage Projects</h2>
+
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-info">@TempData["Msg"]</div>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Owner</th>
+            <th>Created</th>
+            <th style="width: 140px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Title</td>
+                <td><span class="badge bg-secondary">@p.Status</span></td>
+                <td>@(p.Owner?.FullName ?? "-")</td>
+                <td>@p.CreatedAt.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <form asp-action="DeleteProject" method="post"
+                          onsubmit="return confirm('Delete this project?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="projectId" value="@p.Id" />
+                        <button class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

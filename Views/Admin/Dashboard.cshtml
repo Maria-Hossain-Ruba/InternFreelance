@@ -1,57 +1,114 @@
-﻿@model IEnumerable<InternFreelance.Models.Project>
-
+﻿@using InternFreelance.Models
 @{
     ViewData["Title"] = "Admin Dashboard";
+    var latestProjects = ViewBag.LatestProjects as List<Project>;
+    var latestUsers = ViewBag.LatestUsers as List<AppUser>;
 }
 
-<h3 class="mt-3">Admin Dashboard</h3>
+<h2 class="mb-3">Admin Dashboard</h2>
 
-<div class="row mt-3">
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="label">Users</div>
-            <div class="value">@ViewBag.UserCount</div>
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-info">@TempData["Msg"]</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="text-muted">Total Users</div>
+            <div class="fs-3 fw-bold">@ViewBag.TotalUsers</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="label">Projects</div>
-            <div class="value">@ViewBag.ProjectCount</div>
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="text-muted">Total Projects</div>
+            <div class="fs-3 fw-bold">@ViewBag.TotalProjects</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="label">Open</div>
-            <div class="value">@ViewBag.OpenProjects</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="label">Completed</div>
-            <div class="value">@ViewBag.CompletedProjects</div>
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="text-muted">Total Applications</div>
+            <div class="fs-3 fw-bold">@ViewBag.TotalApplications</div>
         </div>
     </div>
 </div>
 
-<h5 class="mt-4">Latest Projects</h5>
-<table class="table table-sm">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>SME</th>
-            <th>Status</th>
-            <th>Created</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            <tr>
-                <td>@p.Title</td>
-                <td>@p.Owner?.FullName</td>
-                <td>@p.Status</td>
-                <td>@p.CreatedAt.ToShortDateString()</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="text-muted">Open</div>
+            <div class="fs-4 fw-bold">@ViewBag.OpenProjects</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="text-muted">Assigned</div>
+            <div class="fs-4 fw-bold">@ViewBag.AssignedProjects</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="text-muted">Completed</div>
+            <div class="fs-4 fw-bold">@ViewBag.CompletedProjects</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between">
+                <h5 class="mb-2">Latest Projects</h5>
+                <a asp-controller="Admin" asp-action="Projects">View all</a>
+            </div>
+
+            @if (latestProjects == null || !latestProjects.Any())
+            {
+                <div class="text-muted">No projects yet.</div>
+            }
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var p in latestProjects)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>
+                                <strong>@p.Title</strong>
+                                <span class="text-muted">(@p.Status)</span>
+                                <div class="small text-muted">Owner: @p.Owner?.FullName</div>
+                            </span>
+                            <span class="small text-muted">@p.CreatedAt.ToString("yyyy-MM-dd")</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between">
+                <h5 class="mb-2">Latest Users</h5>
+                <a asp-controller="Admin" asp-action="Users">View all</a>
+            </div>
+
+            @if (latestUsers == null || !latestUsers.Any())
+            {
+                <div class="text-muted">No users yet.</div>
+            }
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var u in latestUsers)
+                    {
+                        <li class="list-group-item">
+                            <strong>@(u.FullName ?? u.Email)</strong>
+                            <div class="small text-muted">@u.Email</div>
+                            <div class="small">Role: <span class="badge bg-secondary">@u.Role</span></div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>

@@ -350,7 +350,17 @@
                                             Applied: @app.AppliedAt.ToString("yyyy-MM-dd")
                                         </div>
                                     </div>
+                                    @if (app.CertificatePath != null)
+                                    {
+                                        <a href="@app.CertificatePath"
+                                           target="_blank"
+                                           class="btn btn-sm btn-success ms-2">
+                                            View Certificate
+                                        </a>
+                                    }
                                 }
+                               
+
                             </div>
                         }
                     </div>

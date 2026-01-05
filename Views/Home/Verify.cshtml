@@ -1,0 +1,12 @@
+﻿@model InternFreelance.Models.ProjectApplication
+
+<h2>Certificate Verification</h2>
+
+<p><strong>Student:</strong> @Model.Student.FullName</p>
+<p><strong>Project:</strong> @Model.Project.Title</p>
+<p><strong>Rating:</strong> @Model.Rating / 5</p>
+<p><strong>Issued On:</strong> @Model.CertificateIssuedAt?.ToString("dd MMM yyyy")</p>
+
+<p class="text-success">
+    ✅ This certificate is valid and verified by InternFreelance
+</p>
